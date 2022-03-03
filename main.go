@@ -25,16 +25,25 @@ func main() {
 	b := img.Bounds()
 	pic := image.NewGray(image.Rect(0, 0, b.Max.X, b.Max.Y))
 
+	fmt.Println("👾 Processing Transformation...")
 	for x := 0; x < b.Max.X; x++ {
 		for y := 0; y < b.Max.Y; y++ {
 			pic.Set(x, y, img.At(x, y))
 		}
 	}
-	fmt.Println("👾 Transformation : OK")
+	fmt.Println("✅ Transformation is over")
 
-	pa, err := os.Create("pixel_art." + f)
+	save(filename(src.Name()), f, pic)
+}
+
+func filename(f string) string {
+	return "pixel_art.png"
+}
+
+func save(n, f string, pic image.Image) {
+	pa, err := os.Create(n)
 	if err != nil {
-		log.Printf("Cannot create file %q", "pixel_art."+f)
+		log.Printf("Cannot create file %q", n)
 	}
 	defer pa.Close()
 
@@ -42,10 +51,6 @@ func main() {
 	if err != nil {
 		log.Print("Cannot Encode Pixel Art", err)
 	}
+
 	fmt.Printf("💾 Pixel Art saved in file %q\n", pa.Name())
-
 }
-
-// func save(pic *image.Image, filename string) {
-//
-// }
