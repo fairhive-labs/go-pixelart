@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"image"
 	"image/color"
-	"image/jpeg"
 	"image/png"
 	"log"
 	"os"
@@ -33,7 +32,7 @@ func main() {
 	for x := 0; x < b.Max.X; x++ {
 		for y := 0; y < b.Max.Y; y++ {
 			c := img.At(x, y)
-			c = InvertColor(c)
+			c = XRayColor(c)
 			pic.Set(x, y, c)
 		}
 	}
@@ -58,8 +57,6 @@ func Save(n, e string, pic image.Image) {
 	switch e {
 	case "png":
 		err = png.Encode(pa, pic)
-	case "jpeg":
-		err = jpeg.Encode(pa, pic, &jpeg.Options{Quality: 100})
 	default:
 		err = fmt.Errorf("unsupported image format %q", e)
 	}
@@ -79,4 +76,30 @@ func transform(c color.Color) (r, g, b, a uint8) {
 func InvertColor(c color.Color) color.Color {
 	r, g, b, a := transform(c)
 	return color.RGBA{255 - r, 255 - g, 255 - b, a}
+}
+
+func DarkGrayColor(c color.Color) color.Color { // get the darkest value in RGBA
+	return constrastGrayColor(c, 255, func(i, v uint8) bool { return i < v })
+}
+
+func LightGrayColor(c color.Color) color.Color { // get the brighest value in RGBA
+	return constrastGrayColor(c, 0, func(i, v uint8) bool { return i > v })
+}
+
+type predicate func(uint8, uint8) bool
+
+func constrastGrayColor(c color.Color, m uint8, p predicate) color.Color {
+	r, g, b, a := transform(c)
+	s := [3]uint8{r, g, b}
+	var v uint8 = m
+	for _, i := range s {
+		if p(i, v) {
+			v = i
+		}
+	}
+	return color.RGBA{v, v, v, a}
+}
+
+func XRayColor(c color.Color) color.Color {
+	return LightGrayColor(InvertColor(c))
 }
