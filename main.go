@@ -69,7 +69,7 @@ func Save(n, e string, pic image.Image) {
 }
 
 func Transform(c color.Color) color.Color {
-	return GrayColor(c)
+	return LightGrayColor(c)
 }
 
 func convert(c color.Color) (r, g, b, a uint8) {
@@ -78,7 +78,9 @@ func convert(c color.Color) (r, g, b, a uint8) {
 }
 
 func GrayColor(c color.Color) color.Color {
-	return color.GrayModel.Convert(c)
+	r, g, b, a := convert(c)
+	v := r/3 + g/3 + b/3
+	return color.RGBA{v, v, v, a}
 }
 
 func InvertColor(c color.Color) color.Color {
