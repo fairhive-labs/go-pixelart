@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"image"
+	"image/color"
 	"image/jpeg"
 	"image/png"
 	"log"
@@ -26,12 +27,14 @@ func main() {
 	fmt.Printf("🤖 Image DECODED - Format is %q\n", f)
 
 	b := img.Bounds()
-	pic := image.NewGray(image.Rect(0, 0, b.Max.X, b.Max.Y))
+	pic := image.NewRGBA(image.Rect(0, 0, b.Max.X, b.Max.Y))
 
 	fmt.Println("👾 Processing Transformation...")
 	for x := 0; x < b.Max.X; x++ {
 		for y := 0; y < b.Max.Y; y++ {
-			pic.Set(x, y, img.At(x, y))
+			c := img.At(x, y)
+			c = InvertColor(c)
+			pic.Set(x, y, c)
 		}
 	}
 	fmt.Println("✅ Transformation is over")
@@ -66,4 +69,14 @@ func Save(n, e string, pic image.Image) {
 	}
 
 	fmt.Printf("💾 Pixel Art saved in file %q\n", pa.Name())
+}
+
+func transform(c color.Color) (r, g, b, a uint8) {
+	R, G, B, A := c.RGBA()
+	return uint8(R), uint8(G), uint8(B), uint8(A)
+}
+
+func InvertColor(c color.Color) color.Color {
+	r, g, b, a := transform(c)
+	return color.RGBA{255 - r, 255 - g, 255 - b, a}
 }
