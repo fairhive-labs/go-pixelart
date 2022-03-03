@@ -3,9 +3,12 @@ package main
 import (
 	"fmt"
 	"image"
+	"image/jpeg"
 	"image/png"
 	"log"
 	"os"
+	"path/filepath"
+	"time"
 )
 
 func main() {
@@ -33,21 +36,31 @@ func main() {
 	}
 	fmt.Println("✅ Transformation is over")
 
-	save(filename(src.Name()), f, pic)
+	Save(GetFilename(src.Name(), time.Now()), f, pic)
 }
 
-func filename(f string) string {
-	return "pixel_art.png"
+func GetFilename(f string, t time.Time) string {
+	e := filepath.Ext(f)
+	n := f[0 : len(f)-len(e)]
+	return n + "_" + t.Format("20060102-150405") + e
 }
 
-func save(n, f string, pic image.Image) {
+func Save(n, e string, pic image.Image) {
 	pa, err := os.Create(n)
 	if err != nil {
 		log.Printf("Cannot create file %q", n)
 	}
 	defer pa.Close()
 
-	err = png.Encode(pa, pic)
+	switch e {
+	case "png":
+		err = png.Encode(pa, pic)
+	case "jpeg":
+		err = jpeg.Encode(pa, pic, &jpeg.Options{Quality: 100})
+	default:
+		err = fmt.Errorf("unsupported image format %q", e)
+	}
+
 	if err != nil {
 		log.Print("Cannot Encode Pixel Art", err)
 	}
