@@ -32,7 +32,7 @@ func main() {
 	for x := 0; x < b.Max.X; x++ {
 		for y := 0; y < b.Max.Y; y++ {
 			c := img.At(x, y)
-			c = XRayColor(c)
+			c = Transform(c)
 			pic.Set(x, y, c)
 		}
 	}
@@ -68,13 +68,21 @@ func Save(n, e string, pic image.Image) {
 	fmt.Printf("💾 Pixel Art saved in file %q\n", pa.Name())
 }
 
-func transform(c color.Color) (r, g, b, a uint8) {
+func Transform(c color.Color) color.Color {
+	return GrayColor(c)
+}
+
+func convert(c color.Color) (r, g, b, a uint8) {
 	R, G, B, A := c.RGBA()
 	return uint8(R), uint8(G), uint8(B), uint8(A)
 }
 
+func GrayColor(c color.Color) color.Color {
+	return color.GrayModel.Convert(c)
+}
+
 func InvertColor(c color.Color) color.Color {
-	r, g, b, a := transform(c)
+	r, g, b, a := convert(c)
 	return color.RGBA{255 - r, 255 - g, 255 - b, a}
 }
 
@@ -89,7 +97,7 @@ func LightGrayColor(c color.Color) color.Color { // get the brighest value in RG
 type predicate func(uint8, uint8) bool
 
 func constrastGrayColor(c color.Color, m uint8, p predicate) color.Color {
-	r, g, b, a := transform(c)
+	r, g, b, a := convert(c)
 	s := [3]uint8{r, g, b}
 	var v uint8 = m
 	for _, i := range s {
