@@ -5,13 +5,12 @@ import (
 )
 
 func Transform(c color.Color) color.Color {
-	s := []uint32{0x0, 0x0055ffff, 0x00ff55ff, 0x00ffffff}
-	return CGAColor(c, 7, s...)
+	return CGAColor(c, 2, CGA4...)
 }
 
 func convert(c color.Color) (r, g, b, a uint8) {
 	R, G, B, A := c.RGBA()
-	return uint8(R), uint8(G), uint8(B), uint8(A)
+	return uint8(R >> 8), uint8(G >> 8), uint8(B >> 8), uint8(A >> 8)
 }
 
 func GrayColor(c color.Color) color.Color {
@@ -49,33 +48,4 @@ func constrastGrayColor(c color.Color, m uint8, p predicate) color.Color {
 
 func XRayColor(c color.Color) color.Color {
 	return LightGrayColor(InvertColor(c))
-}
-
-func CGAColor(c color.Color, f uint32, s ...uint32) color.Color {
-	r, g, b, a := c.RGBA()
-
-	var v uint32 = 0
-	v |= (r << 16)
-	v |= (g << 8)
-	v |= b
-	v &= 0x00ffffff
-
-	for i, x := range s {
-		if v < x {
-
-			if i == len(s)-1 { // brighter
-				v = x
-				break
-			}
-
-			if v-s[i-1] < (x-v)*f { // more black than magenta/cyan
-				v = s[i-1]
-			} else {
-				v = x
-			}
-			break
-		}
-	}
-
-	return color.RGBA{uint8(v >> 16), uint8(v >> 8), uint8(v), uint8(a)}
 }
