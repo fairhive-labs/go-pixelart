@@ -6,18 +6,18 @@ import (
 )
 
 var (
-	CGA4  = []uint32{0x0, 0x55FFFF, 0xFF55FF, 0xFFFFFF}
-	CGA16 = []uint32{0x0, 0xAA, 0xAA00, 0xAAAA, 0xAA0000, 0xAA00AA, 0xAA5500, 0xAAAAAA,
+	CGA4Table  = []uint32{0x0, 0x55FFFF, 0xFF55FF, 0xFFFFFF}
+	CGA16Table = []uint32{0x0, 0xAA, 0xAA00, 0xAAAA, 0xAA0000, 0xAA00AA, 0xAA5500, 0xAAAAAA,
 		0x555555, 0x5555FF, 0x55FF55, 0x55FFFF, 0xFF5555, 0xFF55FF, 0xFFFF55, 0xFFFFFF}
-	CGA64 []uint32
+	CGA64Table []uint32
 )
 
 func init() {
-	sort.Slice(CGA4, func(i, j int) bool { return SortFN(CGA4, i, j) })
-	sort.Slice(CGA16, func(i, j int) bool { return SortFN(CGA16, i, j) })
+	sort.Slice(CGA4Table, func(i, j int) bool { return SortFn(CGA4Table, i, j) })
+	sort.Slice(CGA16Table, func(i, j int) bool { return SortFn(CGA16Table, i, j) })
 
-	CGA64 = initCGA64(64, 3)
-	sort.Slice(CGA64, func(i, j int) bool { return SortFN(CGA64, i, j) })
+	CGA64Table = initCGA64(64, 3)
+	sort.Slice(CGA64Table, func(i, j int) bool { return SortFn(CGA64Table, i, j) })
 }
 
 func initCGA64(n, b int) []uint32 {
@@ -55,35 +55,28 @@ func convertLeftBits(x uint32, m int) uint32 {
 	return v
 }
 
-func SortFN(s []uint32, i, j int) bool {
+func SortFn(s []uint32, i, j int) bool {
 	return s[i] < s[j]
 }
 
-func CGAColor(c color.Color, f uint32, m ...uint32) color.Color {
+func CGAColor(c color.Color, t ...uint32) color.Color {
 	r, g, b, a := c.RGBA()
 
+	r &= 0xFF
+	g &= 0xFF
+	b &= 0xFF
+
+	r = (0x4 * r) / 0xFF
+	g = (0x4 * g) / 0xFF
+	b = (0x4 * b) / 0xFF
+
 	var v uint32 = 0
-	v |= (r << 16)
-	v |= (g << 8)
+	v |= (r << 4)
+	v |= (g << 2)
 	v |= b
-	v &= 0xffffff
+	v &= 0xFFFFFF
 
-	for i, x := range m {
-		if v < x {
-
-			if i == len(m)-1 { // brighter
-				v = x
-				break
-			}
-
-			if (v - m[i-1]) < (x-v)*f { // more contrast
-				v = m[i-1]
-			} else {
-				v = x
-			}
-			break
-		}
-	}
+	v = t[v]
 
 	return color.RGBA{uint8(v >> 16), uint8(v >> 8), uint8(v), uint8(a)}
 }
