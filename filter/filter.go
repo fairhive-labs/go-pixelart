@@ -5,7 +5,7 @@ import (
 )
 
 func Transform(c color.Color) color.Color {
-	return CGAColor(c, 2, CGA4...)
+	return CGAColor(c, 2, CGA64...)
 }
 
 func convert(c color.Color) (r, g, b, a uint8) {
