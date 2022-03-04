@@ -5,7 +5,8 @@ import (
 )
 
 func Transform(c color.Color) color.Color {
-	return HighCGAColor(c, 3)
+	s := []uint32{0x0, 0x0055ffff, 0x00ff55ff, 0x00ffffff}
+	return CGAColor(c, 7, s...)
 }
 
 func convert(c color.Color) (r, g, b, a uint8) {
@@ -50,9 +51,8 @@ func XRayColor(c color.Color) color.Color {
 	return LightGrayColor(InvertColor(c))
 }
 
-func HighCGAColor(c color.Color, f uint32) color.Color {
+func CGAColor(c color.Color, f uint32, s ...uint32) color.Color {
 	r, g, b, a := c.RGBA()
-	s := [...]uint32{0x0, 0x0055ffff, 0x00ff55ff, 0x00ffffff}
 
 	var v uint32 = 0
 	v |= (r << 16)
@@ -63,7 +63,7 @@ func HighCGAColor(c color.Color, f uint32) color.Color {
 	for i, x := range s {
 		if v < x {
 
-			if i == len(s)-1 { // smooth white
+			if i == len(s)-1 { // brighter
 				v = x
 				break
 			}
