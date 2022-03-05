@@ -7,7 +7,7 @@ import (
 )
 
 func Transform(c color.Color) color.Color {
-	return DarkContrast(c)
+	return CGA(4, c)
 }
 
 func convertColor(c color.Color) (r, g, b, a uint8) {
