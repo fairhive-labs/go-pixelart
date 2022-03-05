@@ -20,10 +20,10 @@ func TestConvertColor(t *testing.T) {
 	var r, g, b, a uint8 = 0x3E, 0x61, 0x43, 0xFF
 	c := color.RGBA{r, g, b, a}
 
-	w, x, y, z := convertColor(c)
+	cr, cg, cb, ca := convertColor(c)
 
 	exp := []uint8{r, g, b, a}
-	got := []uint8{w, x, y, z}
+	got := []uint8{cr, cg, cb, ca}
 
 	if !reflect.DeepEqual(exp, got) {
 		t.Errorf("colors are different, exp = %v, got = %v", exp, got)

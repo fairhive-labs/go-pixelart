@@ -7,28 +7,32 @@ import (
 )
 
 var (
-	CGA4Table  = []uint32{0x0, 0x55FFFF, 0xFF55FF, 0xFFFFFF}
-	CGA16Table = []uint32{0x0, 0xAA, 0xAA00, 0xAAAA, 0xAA0000, 0xAA00AA, 0xAA5500, 0xAAAAAA,
-		0x555555, 0x5555FF, 0x55FF55, 0x55FFFF, 0xFF5555, 0xFF55FF, 0xFFFF55, 0xFFFFFF}
-	CGA64Table  []uint32
 	CGAPalettes map[int]color.Palette
+	CGA64Table  []uint32
 )
 
 func init() {
 	CGAPalettes = make(map[int]color.Palette)
 
-	CGA4colors := make([]color.Color, len(CGA4Table))
-	for i, e := range CGA4Table {
+	CGAPalettes[2] = color.Palette{color.Black, color.White}
+
+	CGAPalettes[4] = generatePalette([]uint32{0x0, 0x55FFFF, 0xFF55FF, 0xFFFFFF})
+
+	CGAPalettes[16] = generatePalette([]uint32{0x0, 0xAA, 0xAA00, 0xAAAA, 0xAA0000, 0xAA00AA, 0xAA5500, 0xAAAAAA,
+		0x555555, 0x5555FF, 0x55FF55, 0x55FFFF, 0xFF5555, 0xFF55FF, 0xFFFF55, 0xFFFFFF})
+
+	CGA64Table = initCGA64Table()
+	CGAPalettes[64] = generatePalette(CGA64Table)
+}
+
+func generatePalette(t []uint32) color.Palette {
+	colors := make([]color.Color, len(t))
+	sort.Slice(t, func(i, j int) bool { return sortAsc(t, i, j) })
+	for i, e := range t {
 		c := CreateColor(e)
-		CGA4colors[i] = c
+		colors[i] = c
 	}
-	CGAPalettes[4] = CGA4colors
-
-	sort.Slice(CGA16Table, func(i, j int) bool { return sortAsc(CGA16Table, i, j) })
-
-	CGA64Table = initCGA64(64, 3)
-	sort.Slice(CGA64Table, func(i, j int) bool { return sortAsc(CGA64Table, i, j) })
-
+	return colors
 }
 
 func CGA(n int, c color.Color) color.Color {
@@ -39,10 +43,10 @@ func CGA(n int, c color.Color) color.Color {
 	return p.Convert(c)
 }
 
-func initCGA64(n, b int) []uint32 {
-	s := make([]uint32, n)
-	for i := 0; i < n; i++ {
-		s[i] = convertBits(uint32(i), b)
+func initCGA64Table() []uint32 {
+	s := make([]uint32, 64)
+	for i := 0; i < 64; i++ {
+		s[i] = convertBits(uint32(i), 3)
 	}
 	return s
 }
@@ -78,8 +82,7 @@ func sortAsc(s []uint32, i, j int) bool {
 	return s[i] < s[j]
 }
 
-// Deprecated
-func CGAColor(c color.Color, t ...uint32) color.Color {
+func CGA64(c color.Color) color.Color {
 	r, g, b, a := c.RGBA()
 
 	r &= 0xFF
@@ -96,7 +99,7 @@ func CGAColor(c color.Color, t ...uint32) color.Color {
 	v |= b
 	v &= 0xFFFFFF
 
-	v = t[v]
+	v = CGA64Table[v]
 
 	return color.RGBA{uint8(v >> 16), uint8(v >> 8), uint8(v), uint8(a)}
 }

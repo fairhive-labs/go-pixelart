@@ -6,12 +6,12 @@ import (
 )
 
 func Transform(c color.Color) color.Color {
-	return CGA(4, c)
+	return CGA64(c)
 }
 
 func convertColor(c color.Color) (r, g, b, a uint8) {
-	w, x, y, z := c.RGBA()
-	return uint8(w >> 8), uint8(x >> 8), uint8(y >> 8), uint8(z >> 8)
+	cr, cg, cb, ca := c.RGBA()
+	return uint8(cr >> 8), uint8(cg >> 8), uint8(cb >> 8), uint8(ca >> 8)
 }
 
 func CreateColor(h uint32) color.Color {
