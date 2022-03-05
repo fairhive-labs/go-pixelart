@@ -7,20 +7,26 @@ import (
 	"testing"
 )
 
-func TestHexa(t *testing.T) {
-	a := 0x00ff
-	b := 0xff
-	if a != b {
-		t.Errorf("%x == %x, got %v", a, b, a == b)
-		t.FailNow()
+func TestHex(t *testing.T) {
+
+	for i := 0; i < 10; i++ {
+		h, _, _, _, _, c := GenerateRandomColor()
+		got := hexValue(c)
+		t.Run(fmt.Sprintf("%.6x", h), func(t *testing.T) {
+			if got != h {
+				t.Errorf("color %v should be %x , got %x", c, h, got)
+				t.FailNow()
+			}
+		})
 	}
+
 }
 
-func TestConvertColor(t *testing.T) {
+func TestRgba(t *testing.T) {
 	var r, g, b, a uint8 = 0x3E, 0x61, 0x43, 0xFF
 	c := color.RGBA{r, g, b, a}
 
-	cr, cg, cb, ca := convertColor(c)
+	cr, cg, cb, ca := rgbaValues(c)
 
 	exp := []uint8{r, g, b, a}
 	got := []uint8{cr, cg, cb, ca}
