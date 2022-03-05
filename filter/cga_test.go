@@ -2,8 +2,22 @@ package filter
 
 import (
 	"fmt"
+	"reflect"
+	"sort"
 	"testing"
 )
+
+func TestSortAsc(t *testing.T) {
+	a := []uint32{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10}
+	b := []uint32{10, 8, 9, 7, 6, 5, 0, 4, 3, 2, 1}
+
+	sort.Slice(b, func(i, j int) bool { return sortAsc(b, i, j) })
+
+	if !reflect.DeepEqual(a, b) {
+		t.Errorf("%v != %v", a, b)
+		t.FailNow()
+	}
+}
 
 func TestConvertRightBits(t *testing.T) {
 

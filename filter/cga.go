@@ -2,6 +2,7 @@ package filter
 
 import (
 	"image/color"
+	"log"
 	"sort"
 )
 
@@ -9,15 +10,33 @@ var (
 	CGA4Table  = []uint32{0x0, 0x55FFFF, 0xFF55FF, 0xFFFFFF}
 	CGA16Table = []uint32{0x0, 0xAA, 0xAA00, 0xAAAA, 0xAA0000, 0xAA00AA, 0xAA5500, 0xAAAAAA,
 		0x555555, 0x5555FF, 0x55FF55, 0x55FFFF, 0xFF5555, 0xFF55FF, 0xFFFF55, 0xFFFFFF}
-	CGA64Table []uint32
+	CGA64Table  []uint32
+	CGAPalettes map[int]color.Palette
 )
 
 func init() {
-	sort.Slice(CGA4Table, func(i, j int) bool { return SortFn(CGA4Table, i, j) })
-	sort.Slice(CGA16Table, func(i, j int) bool { return SortFn(CGA16Table, i, j) })
+	CGAPalettes = make(map[int]color.Palette)
+
+	CGA4colors := make([]color.Color, len(CGA4Table))
+	for i, e := range CGA4Table {
+		c := CreateColor(e)
+		CGA4colors[i] = c
+	}
+	CGAPalettes[4] = CGA4colors
+
+	sort.Slice(CGA16Table, func(i, j int) bool { return sortAsc(CGA16Table, i, j) })
 
 	CGA64Table = initCGA64(64, 3)
-	sort.Slice(CGA64Table, func(i, j int) bool { return SortFn(CGA64Table, i, j) })
+	sort.Slice(CGA64Table, func(i, j int) bool { return sortAsc(CGA64Table, i, j) })
+
+}
+
+func CGA(n int, c color.Color) color.Color {
+	p, ok := CGAPalettes[n]
+	if !ok {
+		log.Fatalf("CGA%d not supported\n", n)
+	}
+	return p.Convert(c)
 }
 
 func initCGA64(n, b int) []uint32 {
@@ -55,10 +74,11 @@ func convertLeftBits(x uint32, m int) uint32 {
 	return v
 }
 
-func SortFn(s []uint32, i, j int) bool {
+func sortAsc(s []uint32, i, j int) bool {
 	return s[i] < s[j]
 }
 
+// Deprecated
 func CGAColor(c color.Color, t ...uint32) color.Color {
 	r, g, b, a := c.RGBA()
 
