@@ -26,13 +26,12 @@ func init() {
 }
 
 func generatePalette(t []uint32) color.Palette {
-	colors := make([]color.Color, len(t))
+	c := make([]color.Color, len(t))
 	sort.Slice(t, func(i, j int) bool { return sortAsc(t, i, j) })
 	for i, e := range t {
-		c := CreateColor(e)
-		colors[i] = c
+		c[i] = CreateColor(e)
 	}
-	return colors
+	return c
 }
 
 func CGA(n int, c color.Color) color.Color {
@@ -80,4 +79,25 @@ func convertLeftBits(x uint32, m int) uint32 {
 
 func sortAsc(s []uint32, i, j int) bool {
 	return s[i] < s[j]
+}
+
+func FastCGA64(c color.Color) color.Color {
+	r, g, b, _ := c.RGBA()
+
+	r &= 0xFF
+	g &= 0xFF
+	b &= 0xFF
+	r = (0x3 * r) / 0xFF
+	r &= 0x3
+	g = (0x3 * g) / 0xFF
+	g &= 0x3
+	b = (0x3 * b) / 0xFF
+	b &= 0x3
+	var v uint32 = 0
+	v |= (r << 4)
+	v |= (g << 2)
+	v |= b
+	v &= 0x3F
+
+	return CGAPalettes[64][v]
 }
