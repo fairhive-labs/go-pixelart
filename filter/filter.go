@@ -7,7 +7,7 @@ import (
 )
 
 func Transform(c color.Color) color.Color {
-	return FastCGA64(c)
+	return FastCGA64(c, true)
 }
 
 func convertColor(c color.Color) (r, g, b, a uint8) {

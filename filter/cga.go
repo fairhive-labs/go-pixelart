@@ -21,8 +21,7 @@ func init() {
 	CGAPalettes[16] = generatePalette([]uint32{0x0, 0xAA, 0xAA00, 0xAAAA, 0xAA0000, 0xAA00AA, 0xAA5500, 0xAAAAAA,
 		0x555555, 0x5555FF, 0x55FF55, 0x55FFFF, 0xFF5555, 0xFF55FF, 0xFFFF55, 0xFFFFFF})
 
-	CGA64Table = initCGA64Table()
-	CGAPalettes[64] = generatePalette(CGA64Table)
+	CGAPalettes[64] = generatePalette(initCGA64Table())
 }
 
 func generatePalette(t []uint32) color.Palette {
@@ -81,18 +80,24 @@ func sortAsc(s []uint32, i, j int) bool {
 	return s[i] < s[j]
 }
 
-func FastCGA64(c color.Color) color.Color {
+func FastCGA64(c color.Color, l bool) color.Color {
 	r, g, b, _ := c.RGBA()
-
 	r &= 0xFF
 	g &= 0xFF
 	b &= 0xFF
-	r = (0x3 * r) / 0xFF
+
+	var m uint32 = 0x4
+	if !l {
+		m = 0x3
+	}
+
+	r = (m * r) / 0x100
 	r &= 0x3
-	g = (0x3 * g) / 0xFF
+	g = (m * g) / 0x100
 	g &= 0x3
-	b = (0x3 * b) / 0xFF
+	b = (m * b) / 0x100
 	b &= 0x3
+
 	var v uint32 = 0
 	v |= (r << 4)
 	v |= (g << 2)
