@@ -106,3 +106,26 @@ func FastCGA64(c color.Color, l bool) color.Color {
 
 	return CGAPalettes[64][v]
 }
+
+func FastCGA16(c color.Color) color.Color {
+	r, g, b, _ := c.RGBA()
+	r &= 0xFF
+	g &= 0xFF
+	b &= 0xFF
+
+	r = (0x2 * r) / 0x100
+	r &= 0x1
+	g = (0x2 * g) / 0x100
+	g &= 0x1
+	b = (0x2 * b) / 0x100
+	b &= 0x1
+
+	var v uint32 = 0
+	v |= (r << 2)
+	v |= (g << 1)
+	v |= b
+
+	v &= 0xF
+
+	return CGAPalettes[16][v]
+}
