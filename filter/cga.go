@@ -81,25 +81,3 @@ func convertLeftBits(x uint32, m int) uint32 {
 func sortAsc(s []uint32, i, j int) bool {
 	return s[i] < s[j]
 }
-
-func CGA64(c color.Color) color.Color {
-	r, g, b, a := c.RGBA()
-
-	r &= 0xFF
-	g &= 0xFF
-	b &= 0xFF
-
-	r = (0x4 * r) / 0xFF
-	g = (0x4 * g) / 0xFF
-	b = (0x4 * b) / 0xFF
-
-	var v uint32 = 0
-	v |= (r << 4)
-	v |= (g << 2)
-	v |= b
-	v &= 0xFFFFFF
-
-	v = CGA64Table[v]
-
-	return color.RGBA{uint8(v >> 16), uint8(v >> 8), uint8(v), uint8(a)}
-}
