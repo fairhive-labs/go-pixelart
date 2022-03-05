@@ -3,10 +3,11 @@ package filter
 import (
 	"image/color"
 	"math/rand"
+	"sort"
 )
 
 func Transform(c color.Color) color.Color {
-	return CGA(64, c)
+	return DarkContrast(c)
 }
 
 func convertColor(c color.Color) (r, g, b, a uint8) {
@@ -45,6 +46,10 @@ func InvertColor(c color.Color) color.Color {
 	return color.RGBA{0xFF - r, 0xFF - g, 0xFF - b, a}
 }
 
+func XRayColor(c color.Color) color.Color {
+	return LightGrayColor(InvertColor(c))
+}
+
 func DarkGrayColor(c color.Color) color.Color { // get the darkest value in RGBA
 	return ConstrastGrayColor(c, 0xFF, func(i, v uint8) bool { return i < v })
 }
@@ -67,6 +72,21 @@ func ConstrastGrayColor(c color.Color, m uint8, p predicate) color.Color {
 	return color.RGBA{v, v, v, a}
 }
 
-func XRayColor(c color.Color) color.Color {
-	return LightGrayColor(InvertColor(c))
+func DarkContrast(c color.Color) color.Color {
+	r, g, b, a := convertColor(c)
+
+	s := []uint8{r, g, b}
+	sort.Slice(s, func(i, j int) bool {
+		return s[i] <= s[j]
+	})
+
+	m := map[uint8]int{r: 0, g: 0, b: 0}
+	for i, x := range s {
+		m[x] = i
+	}
+
+	s[1] -= ((s[1] - s[0]) >> 1)
+	s[2] -= ((s[2] - s[0]) >> 2)
+
+	return color.RGBA{s[m[r]], s[m[g]], s[m[b]], a}
 }

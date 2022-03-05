@@ -22,7 +22,7 @@ func main() {
 
 	img, f, err := image.Decode(src)
 	if err != nil {
-		log.Fatal("Cannot decode image", err)
+		log.Fatal("Cannot decode: ", err)
 	}
 	fmt.Printf("🤖 Image DECODED - Format is %q\n", f)
 
