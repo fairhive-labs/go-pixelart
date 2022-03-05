@@ -133,10 +133,7 @@ func FastCGA16(c color.Color) color.Color {
 func FastCGA4(c color.Color) (n color.Color) {
 	h := hexValue(c)
 	t := CGAPalettes[4]
-	m := hexValue(t[len(t)-1])
+	var m uint32 = 0x1000000
 	i := (h / (m >> 2))
-	if i >= 3 {
-		i = 3
-	}
 	return t[i]
 }
