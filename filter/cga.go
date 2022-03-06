@@ -113,17 +113,17 @@ func FastCGA16(c color.Color) color.Color {
 	g &= 0xFF
 	b &= 0xFF
 
+	var l uint32 = 0x0
+	if (r/3 + g/3 + b/3) > (0x100 >> 1) { // compute the r,g,b average brightness
+		l = 0x1
+	}
+
 	r = (0x2 * r) / 0x100
 	r &= 0x1
 	g = (0x2 * g) / 0x100
 	g &= 0x1
 	b = (0x2 * b) / 0x100
 	b &= 0x1
-
-	var l uint32 = 0x0
-	if (r/3 + g/3 + b/3) > (0x100 >> 1) { // compute the r,g,b average brightness
-		l = 0x1
-	}
 
 	var v uint32 = 0
 	v |= (l << 3)
