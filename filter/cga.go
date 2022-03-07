@@ -3,7 +3,6 @@ package filter
 import (
 	"image/color"
 	"log"
-	"sort"
 )
 
 var (
@@ -16,17 +15,18 @@ func init() {
 
 	CGAPalettes[2] = color.Palette{color.Black, color.White}
 
-	CGAPalettes[4] = generatePalette([]uint32{0x0, 0x55FFFF, 0xFF55FF, 0xFFFFFF})
+	CGAPalettes[4] = generatePalette([]uint32{0x0, 0xFF55FF, 0x55FFFF, 0xFFFFFF})
 
+	// sort.Slice(t, func(i, j int) bool { return sortAsc(t, i, j) })
 	CGAPalettes[16] = generatePalette([]uint32{0x0, 0xAA, 0xAA00, 0xAAAA, 0xAA0000, 0xAA00AA, 0xAA5500, 0xAAAAAA,
 		0x555555, 0x5555FF, 0x55FF55, 0x55FFFF, 0xFF5555, 0xFF55FF, 0xFFFF55, 0xFFFFFF})
 
+	// sort.Slice(t, func(i, j int) bool { return sortAsc(t, i, j) })
 	CGAPalettes[64] = generatePalette(initCGA64Table())
 }
 
 func generatePalette(t []uint32) color.Palette {
 	c := make([]color.Color, len(t))
-	sort.Slice(t, func(i, j int) bool { return sortAsc(t, i, j) })
 	for i, e := range t {
 		c[i] = CreateColor(e)
 	}
