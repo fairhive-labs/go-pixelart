@@ -2,7 +2,6 @@ package filter
 
 import (
 	"image/color"
-	"log"
 	"sort"
 )
 
@@ -15,14 +14,14 @@ func init() {
 
 	CGAPalettes[2] = color.Palette{color.Black, color.White}
 
-	CGAPalettes[4] = generatePalette([]uint32{0x0, 0xFF55FF, 0x55FFFF, 0xFFFFFF})
+	t4 := []uint32{0x0, 0xFF55FF, 0x55FFFF, 0xFFFFFF}
+	CGAPalettes[4] = generatePalette(t4)
 
 	t16 := []uint32{0x0, 0xAA, 0xAA00, 0xAAAA, 0xAA0000, 0xAA00AA, 0xAA5500, 0xAAAAAA,
 		0x555555, 0x5555FF, 0x55FF55, 0x55FFFF, 0xFF5555, 0xFF55FF, 0xFFFF55, 0xFFFFFF}
 	CGAPalettes[16] = generatePalette(t16)
 
 	t64 := initCGA64Table()
-	sort.Slice(t64, func(i, j int) bool { return sortAsc(t64, i, j) })
 	CGAPalettes[64] = generatePalette(t64)
 }
 
@@ -34,12 +33,8 @@ func generatePalette(t []uint32) color.Palette {
 	return c
 }
 
-func CGA(n int, c color.Color) color.Color {
-	p, ok := CGAPalettes[n]
-	if !ok {
-		log.Fatalf("CGA%d not supported\n", n)
-	}
-	return p.Convert(c)
+func sortAsc(s []uint32, i, j int) bool {
+	return s[i] < s[j]
 }
 
 func initCGA64Table() []uint32 {
@@ -47,6 +42,7 @@ func initCGA64Table() []uint32 {
 	for i := 0; i < 64; i++ {
 		s[i] = convertBits(uint32(i), 3)
 	}
+	sort.Slice(s, func(i, j int) bool { return sortAsc(s, i, j) })
 	return s
 }
 
@@ -77,11 +73,7 @@ func convertLeftBits(x uint32, m int) uint32 {
 	return v
 }
 
-func sortAsc(s []uint32, i, j int) bool {
-	return s[i] < s[j]
-}
-
-func FastCGA64(c color.Color) color.Color {
+func CGA64(c color.Color) color.Color {
 	r, g, b, _ := c.RGBA()
 	r &= 0xFF
 	g &= 0xFF
@@ -108,7 +100,7 @@ func FastCGA64(c color.Color) color.Color {
 	return CGAPalettes[64][v]
 }
 
-func FastCGA16(c color.Color) color.Color {
+func CGA16(c color.Color) color.Color {
 	r, g, b, _ := c.RGBA()
 	r &= 0xFF
 	g &= 0xFF
@@ -137,10 +129,18 @@ func FastCGA16(c color.Color) color.Color {
 	return CGAPalettes[16][v]
 }
 
-func FastCGA4(c color.Color) (n color.Color) {
+func CGA4(c color.Color) (n color.Color) {
 	h := hexValue(c)
 	t := CGAPalettes[4]
 	var m uint32 = 0x1000000
 	i := (h / (m >> 2))
+	return t[i]
+}
+
+func CGA2(c color.Color) (n color.Color) {
+	h := hexValue(c)
+	t := CGAPalettes[2]
+	var m uint32 = 0x1000000
+	i := (h / (m >> 1))
 	return t[i]
 }
