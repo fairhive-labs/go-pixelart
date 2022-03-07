@@ -19,7 +19,6 @@ func init() {
 
 	t16 := []uint32{0x0, 0xAA, 0xAA00, 0xAAAA, 0xAA0000, 0xAA00AA, 0xAA5500, 0xAAAAAA,
 		0x555555, 0x5555FF, 0x55FF55, 0x55FFFF, 0xFF5555, 0xFF55FF, 0xFFFF55, 0xFFFFFF}
-	sort.Slice(t16, func(i, j int) bool { return sortAsc(t16, i, j) })
 	CGAPalettes[16] = generatePalette(t16)
 
 	t64 := initCGA64Table()
