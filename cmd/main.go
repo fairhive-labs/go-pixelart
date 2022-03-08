@@ -9,7 +9,7 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/trendev/go-pixelart/filter"
+	"github.com/fairhive-labs/go-pixelart/filter"
 )
 
 func main() {
@@ -29,6 +29,7 @@ func main() {
 	b := img.Bounds()
 	pic := image.NewRGBA(image.Rect(0, 0, b.Max.X, b.Max.Y))
 
+	//@TODO : refactor + prepare kernel convolution
 	fmt.Println("👾 Processing Transformation...")
 	for x := 0; x < b.Max.X; x++ {
 		for y := 0; y < b.Max.Y; y++ {

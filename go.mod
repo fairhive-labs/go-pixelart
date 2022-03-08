@@ -1,3 +1,3 @@
-module github.com/trendev/go-pixelart
+module github.com/fairhive-labs/go-pixelart
 
 go 1.17
