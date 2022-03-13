@@ -7,9 +7,7 @@ import (
 	"github.com/fairhive-labs/go-pixelart/utils"
 )
 
-func TransformPixel(c color.Color) color.Color {
-	return CGA4(c)
-}
+type predicate func(uint8, uint8) bool
 
 func GrayColor(c color.Color) color.Color {
 	r, g, b, a := utils.RgbaValues(c)
@@ -25,8 +23,6 @@ func InvertColor(c color.Color) color.Color {
 func XRayColor(c color.Color) color.Color {
 	return LightGrayColor(InvertColor(c))
 }
-
-type predicate func(uint8, uint8) bool
 
 func ConstrastGrayColor(c color.Color, m uint8, p predicate) color.Color {
 	r, g, b, a := utils.RgbaValues(c)

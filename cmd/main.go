@@ -29,12 +29,11 @@ func main() {
 	b := img.Bounds()
 	p := image.NewRGBA(image.Rect(0, 0, b.Max.X, b.Max.Y))
 
-	//@TODO : refactor + prepare kernel convolution
 	fmt.Println("👾 Processing Transformation...")
 	for x := 0; x < b.Max.X; x++ {
 		for y := 0; y < b.Max.Y; y++ {
 			c := img.At(x, y)
-			c = filter.TransformPixel(c)
+			c = filter.CGA64(c)
 			p.Set(x, y, c)
 		}
 	}
