@@ -3,7 +3,11 @@ package filter
 import (
 	"errors"
 	"fmt"
+	"image"
+	"image/color"
 	"log"
+
+	"github.com/fairhive-labs/go-pixelart/utils"
 )
 
 type Matrix []int
@@ -71,4 +75,12 @@ func NewKernel(s int, m Matrix, f int) (*Kernel, error) {
 	}
 
 	return &Kernel{s, m, f}, nil
+}
+
+func ProcessConvolution(k *Kernel, img *image.Image, x, y int) color.Color {
+	if k == nil {
+		return utils.Identity(img, x, y)
+	}
+	//TODO : perform convolution instead
+	return utils.Identity(img, x, y)
 }

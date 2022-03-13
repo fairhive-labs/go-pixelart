@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"image"
 	"image/color"
 	"math/rand"
 )
@@ -70,4 +71,8 @@ func GenerateRandomColor() (h, r, g, b, a uint32, c color.Color) {
 	c = CreateColor(h)
 	r, g, b, a = c.RGBA()
 	return
+}
+
+func Identity(img *image.Image, x, y int) color.Color {
+	return (*img).At(x, y)
 }
