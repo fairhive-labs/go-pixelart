@@ -28,12 +28,13 @@ func main() {
 
 	b := img.Bounds()
 	p := image.NewRGBA(image.Rect(0, 0, b.Max.X, b.Max.Y))
+	fmt.Printf("🖼  Dimension = [ %d x %d ]\n", b.Max.X, b.Max.Y)
 
 	fmt.Println("👾 Processing Transformation...")
 	for x := 0; x < b.Max.X; x++ {
 		for y := 0; y < b.Max.Y; y++ {
-			k := filter.Gauss_3x3
-			c := filter.ProcessConvolution(&k, nil, &img, x, y, b.Max.X, b.Max.Y)
+			k, _ := filter.Gauss(3)
+			c := filter.ProcessConvolution(k, nil, &img, x, y, b.Max.X, b.Max.Y)
 			p.Set(x, y, c)
 		}
 	}

@@ -133,3 +133,22 @@ func correctValue(x int) int {
 	}
 	return x
 }
+
+func Gauss(s int) (*kernel, error) {
+	if s < Min {
+		log.Printf("kernel size = %d\n", s)
+		return nil, ErrKernelSize
+	}
+	if s%2 == 0 {
+		log.Printf("kernel size = %d, kernel size must be an odd number\n", s)
+		return nil, ErrKernelSize
+	}
+	n := s * s
+	m := make([]int, n)
+
+	for i := range m {
+		m[i] = 1
+	}
+
+	return NewKernel(s, m, n)
+}
