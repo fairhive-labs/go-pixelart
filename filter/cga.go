@@ -3,6 +3,8 @@ package filter
 import (
 	"image/color"
 	"sort"
+
+	"github.com/fairhive-labs/go-pixelart/utils"
 )
 
 var (
@@ -28,49 +30,18 @@ func init() {
 func generatePalette(t []uint32) color.Palette {
 	c := make([]color.Color, len(t))
 	for i, e := range t {
-		c[i] = CreateColor(e)
+		c[i] = utils.CreateColor(e)
 	}
 	return c
-}
-
-func sortAsc(s []uint32, i, j int) bool {
-	return s[i] < s[j]
 }
 
 func initCGA64Table() []uint32 {
 	s := make([]uint32, 64)
 	for i := 0; i < 64; i++ {
-		s[i] = convertBits(uint32(i), 3)
+		s[i] = utils.ConvertBits(uint32(i), 3)
 	}
-	sort.Slice(s, func(i, j int) bool { return sortAsc(s, i, j) })
+	sort.Slice(s, func(i, j int) bool { return utils.SortAsc(s, i, j) })
 	return s
-}
-
-func convertBits(x uint32, m int) uint32 {
-	v := convertRightBits(x, m) + convertLeftBits(x, m)
-	v &= 0xFFFFFF
-	return v
-}
-
-func convertRightBits(x uint32, m int) uint32 {
-	var v uint32 = 0
-	for i := 0; i < m; i++ {
-		if ((x >> i) & 0x1) == 0x1 {
-			v |= (0xAA << (i * 8))
-		}
-	}
-	return v
-}
-
-func convertLeftBits(x uint32, m int) uint32 {
-	var v uint32 = 0
-	x = x >> m
-	for i := 0; i < m; i++ {
-		if ((x >> i) & 0x1) == 0x1 {
-			v |= (0x55 << (i * 8))
-		}
-	}
-	return v
 }
 
 func CGA64(c color.Color) color.Color {
@@ -130,7 +101,7 @@ func CGA16(c color.Color) color.Color {
 }
 
 func CGA4(c color.Color) (n color.Color) {
-	h := hexValue(c)
+	h := utils.HexValue(c)
 	t := CGAPalettes[4]
 	var m uint32 = 0x1000000
 	i := (h / (m >> 2))
@@ -138,7 +109,7 @@ func CGA4(c color.Color) (n color.Color) {
 }
 
 func CGA2(c color.Color) (n color.Color) {
-	h := hexValue(c)
+	h := utils.HexValue(c)
 	t := CGAPalettes[2]
 	var m uint32 = 0x1000000
 	i := (h / (m >> 1))

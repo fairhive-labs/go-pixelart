@@ -2,58 +2,23 @@ package filter
 
 import (
 	"image/color"
-	"math/rand"
 	"sort"
+
+	"github.com/fairhive-labs/go-pixelart/utils"
 )
 
 func TransformPixel(c color.Color) color.Color {
 	return CGA4(c)
 }
 
-func rgbaValues(c color.Color) (r, g, b, a uint8) {
-	cr, cg, cb, ca := c.RGBA()
-	return uint8(cr >> 8), uint8(cg >> 8), uint8(cb >> 8), uint8(ca >> 8)
-}
-
-func hexValue(c color.Color) (h uint32) {
-	r, g, b, _ := rgbaValues(c)
-
-	h = 0
-	h |= uint32(r) << 16
-	h |= uint32(g) << 8
-	h |= uint32(b)
-
-	return
-}
-
-func CreateColor(h uint32) color.Color {
-	v := h & 0xFFFFFF
-
-	r := v >> 16
-	r &= 0xFF
-	g := v >> 8
-	g &= 0xFF
-	b := v & 0xFF
-	a := 0xFF // force alpha to 1.0
-
-	return color.RGBA{uint8(r), uint8(g), uint8(b), uint8(a)}
-}
-
-func GenerateRandomColor() (h, r, g, b, a uint32, c color.Color) {
-	h = rand.Uint32() & 0xFFFFFF
-	c = CreateColor(h)
-	r, g, b, a = c.RGBA()
-	return
-}
-
 func GrayColor(c color.Color) color.Color {
-	r, g, b, a := rgbaValues(c)
+	r, g, b, a := utils.RgbaValues(c)
 	v := r/3 + g/3 + b/3
 	return color.RGBA{v, v, v, a}
 }
 
 func InvertColor(c color.Color) color.Color {
-	r, g, b, a := rgbaValues(c)
+	r, g, b, a := utils.RgbaValues(c)
 	return color.RGBA{0xFF - r, 0xFF - g, 0xFF - b, a}
 }
 
@@ -61,18 +26,10 @@ func XRayColor(c color.Color) color.Color {
 	return LightGrayColor(InvertColor(c))
 }
 
-func DarkGrayColor(c color.Color) color.Color { // get the darkest value in RGBA
-	return ConstrastGrayColor(c, 0xFF, func(i, v uint8) bool { return i < v })
-}
-
-func LightGrayColor(c color.Color) color.Color { // get the brighest value in RGBA
-	return ConstrastGrayColor(c, 0x00, func(i, v uint8) bool { return i > v })
-}
-
 type predicate func(uint8, uint8) bool
 
 func ConstrastGrayColor(c color.Color, m uint8, p predicate) color.Color {
-	r, g, b, a := rgbaValues(c)
+	r, g, b, a := utils.RgbaValues(c)
 	s := [3]uint8{r, g, b}
 	var v uint8 = m
 	for _, i := range s {
@@ -83,8 +40,16 @@ func ConstrastGrayColor(c color.Color, m uint8, p predicate) color.Color {
 	return color.RGBA{v, v, v, a}
 }
 
+func DarkGrayColor(c color.Color) color.Color { // get the darkest value in RGBA
+	return ConstrastGrayColor(c, 0xFF, func(i, v uint8) bool { return i < v })
+}
+
+func LightGrayColor(c color.Color) color.Color { // get the brighest value in RGBA
+	return ConstrastGrayColor(c, 0x00, func(i, v uint8) bool { return i > v })
+}
+
 func DarkContrast(c color.Color) color.Color {
-	r, g, b, a := rgbaValues(c)
+	r, g, b, a := utils.RgbaValues(c)
 
 	s := []uint8{r, g, b}
 	sort.Slice(s, func(i, j int) bool {
