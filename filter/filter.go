@@ -6,7 +6,7 @@ import (
 	"sort"
 )
 
-func Transform(c color.Color) color.Color {
+func TransformPixel(c color.Color) color.Color {
 	return CGA4(c)
 }
 
