@@ -89,3 +89,27 @@ func TestNewKernel(t *testing.T) {
 	}
 
 }
+
+func TestCorrectValue(t *testing.T) {
+	tt := []struct {
+		name   string
+		value  int
+		result int
+	}{
+		{"less than 0", -1, 0},
+		{"equal 0", 0, 0},
+		{"greather than 0xFF", 1024, 0xFF},
+		{"equal 0xFF", 0xFF, 0xFF},
+		{"128", 128, 128},
+	}
+
+	for _, tc := range tt {
+		t.Run(tc.name, func(t *testing.T) {
+			got := correctValue(tc.value)
+			if got != tc.result {
+				t.Errorf("correctValue(%d) = %d , got = %d", tc.value, tc.result, got)
+				t.FailNow()
+			}
+		})
+	}
+}

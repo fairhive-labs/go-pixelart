@@ -44,10 +44,6 @@ func initCGA64Table() []uint32 {
 	return s
 }
 
-func ProcessTransform(transform func(color.Color) color.Color, c color.Color) color.Color {
-	return transform(c)
-}
-
 func CGA64(c color.Color) color.Color {
 	r, g, b, _ := c.RGBA()
 	r &= 0xFF

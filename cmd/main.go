@@ -32,8 +32,8 @@ func main() {
 	fmt.Println("👾 Processing Transformation...")
 	for x := 0; x < b.Max.X; x++ {
 		for y := 0; y < b.Max.Y; y++ {
-			c := filter.ProcessConvolution(nil, &img, x, y)
-			c = filter.ProcessTransform(filter.CGA64, c)
+			k := filter.Gauss_3x3
+			c := filter.ProcessConvolution(&k, nil, &img, x, y, b.Max.X, b.Max.Y)
 			p.Set(x, y, c)
 		}
 	}

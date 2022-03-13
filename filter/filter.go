@@ -9,6 +9,8 @@ import (
 
 type predicate func(uint8, uint8) bool
 
+type ColorTransformation func(color.Color) color.Color
+
 func GrayColor(c color.Color) color.Color {
 	r, g, b, a := utils.RgbaValues(c)
 	v := r/3 + g/3 + b/3
