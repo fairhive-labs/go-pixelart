@@ -34,8 +34,8 @@ func main() {
 	for x := 0; x < b.Max.X; x++ {
 		for y := 0; y < b.Max.Y; y++ {
 			// k, _ := filter.Gauss(17)
-			k := &filter.RidgeDetection_3x3_hard
-			c := filter.ProcessConvolution(k, nil, nil, &img, x, y, b.Max.X, b.Max.Y)
+			k := &filter.Sharpen_3x3
+			c := filter.ProcessConvolution(k, nil, &img, x, y, b.Max.X, b.Max.Y, nil)
 			p.Set(x, y, c)
 		}
 	}

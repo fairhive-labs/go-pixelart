@@ -89,7 +89,7 @@ func NewKernel(s int, m Matrix, f int) (*kernel, error) {
 	return &kernel{s, m, f}, nil
 }
 
-func ProcessConvolution(k *kernel, preProcessing, postProcessing ColorTransformation, img *image.Image, x, y, xmax, ymax int) color.Color {
+func ProcessConvolution(k *kernel, preProcessing ColorTransformation, img *image.Image, x, y, xmax, ymax int, postProcessing ColorTransformation) color.Color {
 	if postProcessing == nil {
 		postProcessing = utils.Identity
 	}
