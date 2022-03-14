@@ -35,9 +35,15 @@ var (
 		1,
 	}
 
-	RidgeDetection_3x3 = kernel{
+	RidgeDetection_3x3_soft = kernel{
 		3,
 		[]int{0, -1, 0, -1, 4, -1, 0, -1, 0},
+		1,
+	}
+
+	RidgeDetection_3x3_hard = kernel{
+		3,
+		[]int{-1, -1, -1, -1, 8, -1, -1, -1, -1},
 		1,
 	}
 
@@ -83,27 +89,27 @@ func NewKernel(s int, m Matrix, f int) (*kernel, error) {
 	return &kernel{s, m, f}, nil
 }
 
-func ProcessConvolution(k *kernel, t ColorTransformation, img *image.Image, x, y, xmax, ymax int) color.Color {
-	if t == nil {
-		t = utils.Identity
+func ProcessConvolution(k *kernel, preProcessing, postProcessing ColorTransformation, img *image.Image, x, y, xmax, ymax int) color.Color {
+	if postProcessing == nil {
+		postProcessing = utils.Identity
 	}
 
 	if k == nil {
-		return t((*img).At(x, y))
+		return postProcessing(getPixel(preProcessing, img, x, y))
 	}
 
 	s := k.size
-	rs := 0
-	gs := 0
-	bs := 0
+	rs := 0 // red accumulator
+	gs := 0 // green accumulator
+	bs := 0 // blue accumulator
 
 	for i := 0; i < s; i++ {
 		for j := 0; j < s; j++ {
 			var c color.Color
 			if i+x-s/2 >= 0 && j+y-s/2 >= 0 && i+x-s/2 < xmax && j+y-s/2 < ymax {
-				c = (*img).At(i+x-s/2, j+y-s/2)
+				c = getPixel(preProcessing, img, i+x-s/2, j+y-s/2)
 			} else {
-				c = (*img).At(x, y)
+				c = getPixel(preProcessing, img, x, y)
 			}
 			r, g, b, _ := utils.RgbaValues(c)
 			rs += k.matrix[j*s+i] * int(r)
@@ -114,14 +120,18 @@ func ProcessConvolution(k *kernel, t ColorTransformation, img *image.Image, x, y
 
 	if k.factor != 1 {
 		rs /= k.factor
-		rs = correctValue(rs)
 		gs /= k.factor
-		gs = correctValue(gs)
 		bs /= k.factor
-		bs = correctValue(bs)
 	}
 
-	return t(color.RGBA{uint8(rs), uint8(gs), uint8(bs), 0xFF})
+	return postProcessing(color.RGBA{uint8(correctValue(rs)), uint8(correctValue(gs)), uint8(correctValue(bs)), 0xFF})
+}
+
+func getPixel(t ColorTransformation, img *image.Image, x, y int) color.Color {
+	if t == nil {
+		t = utils.Identity
+	}
+	return t((*img).At(x, y))
 }
 
 func correctValue(x int) int {
