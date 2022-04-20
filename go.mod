@@ -1,3 +1,3 @@
 module github.com/fairhive-labs/go-pixelart
 
-go 1.17
+go 1.18
