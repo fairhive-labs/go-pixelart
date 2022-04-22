@@ -111,7 +111,7 @@ func NewKernel(s int, m matrix, f int) (*kernel, error) {
 
 func processConvolution(img *image.Image, x, y, xmax, ymax int, k *kernel, preProcessing, postProcessing TransformColor) color.Color {
 	if postProcessing == nil {
-		postProcessing = colorutils.Identity
+		postProcessing = Identity
 	}
 
 	if k == nil {
@@ -149,7 +149,7 @@ func processConvolution(img *image.Image, x, y, xmax, ymax int, k *kernel, prePr
 
 func getPixel(t TransformColor, img *image.Image, x, y int) color.Color {
 	if t == nil {
-		t = colorutils.Identity
+		t = Identity
 	}
 	return t((*img).At(x, y))
 }

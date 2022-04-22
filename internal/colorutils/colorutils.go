@@ -71,7 +71,3 @@ func GenerateRandomColor() (h, r, g, b, a uint32, c color.Color) {
 	r, g, b, a = c.RGBA()
 	return
 }
-
-func Identity(c color.Color) color.Color {
-	return c
-}

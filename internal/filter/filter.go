@@ -90,3 +90,7 @@ func DarkContrast(c color.Color) color.Color {
 
 	return color.RGBA{s[m[r]], s[m[g]], s[m[b]], a}
 }
+
+func Identity(c color.Color) color.Color {
+	return c
+}
