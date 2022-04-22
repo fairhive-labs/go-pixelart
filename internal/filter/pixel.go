@@ -4,7 +4,8 @@ import (
 	"fmt"
 	"image"
 	"image/color"
-	"sync"
+
+	"github.com/fairhive-labs/go-pixelart/internal/colorutils"
 )
 
 // Edge is a Predicate function
@@ -66,33 +67,49 @@ func (f *pixelFilter) Process(src *image.Image) *image.RGBA {
 	}
 
 	// init as checkerboard
-	colors := make(chan *Block, X*Y)
-	var wg sync.WaitGroup
+	colorsSize := X * Y
+	colors := make(chan *Block, colorsSize)
 	for x := 0; x < X; x++ {
 		for y := 0; y < Y; y++ {
-			wg.Add(1)
 			go func(x, y int) {
-				defer wg.Done()
-				if (x%2 == 0 && y%2 == 0) || (x%2 == 1 && y%2 == 1) {
-					colors <- &Block{x, y, color.Black}
-				} else {
-					colors <- &Block{x, y, color.White}
+				count, ra, ga, ba := 0, 0, 0, 0 // length + RGB averages
+				// read colors in original pictures
+				for i := x * blockSize; i < (x+1)*blockSize && i < b.Max.X; i++ {
+					for j := y * blockSize; j < (y+1)*blockSize && j < b.Max.Y; j++ {
+						count++
+						c := (*src).At(i, j)
+						rc, gc, bc, _ := colorutils.RgbaValues(c)
+						ra += int(rc)
+						ga += int(gc)
+						ba += int(bc)
+					}
 				}
+				//calcul averages
+				ra = ra / count
+				ra &= 0xFF
+				ga = ga / count
+				ga &= 0xFF
+				ba = ba / count
+				ba &= 0xFF
+				c := color.RGBA{uint8(ra), uint8(ga), uint8(ba), 0xFF}
+				colors <- &Block{x, y, c}
 			}(x, y)
 		}
 	}
-	wg.Wait()
-	close(colors)
-	for b := range colors {
-		blockMap[b.x][b.y] = b.c
+	// get colors from original picture and transform them
+	for i := 0; i < colorsSize; i++ {
+		b := <-colors
+		blockMap[b.x][b.y] = f.transform(b.c)
 	}
+	close(colors)
 
+	// create new picture with whole blocks
 	xMax, yMax := X*blockSize, Y*blockSize
 	fmt.Printf("🖼  New Dimension = [ %d x %d ]\n", xMax, yMax)
-	p := image.NewRGBA(image.Rect(0, 0, xMax, yMax)) // create new picture with full blocks
+	p := image.NewRGBA(image.Rect(0, 0, xMax, yMax))
 	for x := 0; x < xMax; x++ {
 		for y := 0; y < yMax; y++ {
-			c := blockMap[x/blockSize][y/blockSize]
+			c := blockMap[x/blockSize][y/blockSize] // set the color from the pixel block map
 			p.Set(x, y, c)
 		}
 	}
