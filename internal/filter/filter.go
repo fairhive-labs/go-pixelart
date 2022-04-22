@@ -10,7 +10,7 @@ import (
 
 type Filter interface {
 	//Process image transformation from source src to destination dst
-	Process(src, dst *image.Image) error
+	Process(src, dst *image.Image)
 }
 
 type basicFilter struct {
@@ -25,7 +25,7 @@ func NewBasicFilter(transform TransformColor) *basicFilter {
 	return &basicFilter{transform}
 }
 
-func (f *basicFilter) Process(src *image.Image, dst *image.RGBA) (err error) {
+func (f *basicFilter) Process(src *image.Image, dst *image.RGBA) {
 	b := (*src).Bounds()
 	for x := 0; x < b.Max.X; x++ {
 		for y := 0; y < b.Max.Y; y++ {
@@ -33,7 +33,6 @@ func (f *basicFilter) Process(src *image.Image, dst *image.RGBA) (err error) {
 			(*dst).Set(x, y, c)
 		}
 	}
-	return
 }
 
 func GrayColor(c color.Color) color.Color {

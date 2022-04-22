@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"image"
 	"image/png"
-	"log"
 	"os"
 	"path/filepath"
 	"time"
@@ -15,14 +14,16 @@ import (
 func main() {
 	src, err := os.Open(os.Args[1])
 	if err != nil {
-		log.Fatal("Cannot open file", os.Args[1], err)
+		fmt.Print("Cannot open file", os.Args[1], err)
+		os.Exit(1)
 	}
 	defer src.Close()
 	fmt.Printf("👉 Source file %q opened\n", os.Args[1])
 
 	img, f, err := image.Decode(src)
 	if err != nil {
-		log.Fatal("Cannot decode: ", err)
+		fmt.Print("Cannot decode: ", err)
+		os.Exit(1)
 	}
 	fmt.Printf("🤖 Image DECODED - Format is %q\n", f)
 
@@ -31,20 +32,10 @@ func main() {
 	fmt.Printf("🖼  Dimension = [ %d x %d ]\n", b.Max.X, b.Max.Y)
 
 	fmt.Println("👾 Processing Transformation...")
-	ft := filter.NewBasicFilter(filter.CGA4)
-	if err := ft.Process(&img, p); err != nil {
-		fmt.Printf("❌ Transformation failed: %v", err)
-		os.Exit(1)
-	}
+	ft := filter.NewConvolutionFilter(&filter.RidgeDetection_3x3_hard, nil, nil)
+	ft.Process(&img, p)
 	fmt.Println("✅ Transformation is over")
-	// for x := 0; x < b.Max.X; x++ {
-	// 	for y := 0; y < b.Max.Y; y++ {
-	// 		// k, _ := filter.Gauss(17)
-	// 		k := &filter.Sharpen_3x3
-	// 		c := filter.ProcessConvolution(&img, x, y, b.Max.X, b.Max.Y, k, nil, nil)
-	// 		p.Set(x, y, c)
-	// 	}
-	// }
+
 	save(getFilename(src.Name(), time.Now()), f, p)
 }
 
@@ -57,7 +48,7 @@ func getFilename(f string, t time.Time) string {
 func save(n, e string, p image.Image) {
 	f, err := os.Create(n)
 	if err != nil {
-		log.Printf("Cannot create file %q", n)
+		fmt.Printf("Cannot create file %q", n)
 	}
 	defer f.Close()
 
@@ -69,7 +60,7 @@ func save(n, e string, p image.Image) {
 	}
 
 	if err != nil {
-		log.Print("Cannot Encode Pixel Art", err)
+		fmt.Print("Cannot Encode Pixel Art", err)
 	}
 
 	fmt.Printf("💾 Pixel Art saved in file %q\n", f.Name())
