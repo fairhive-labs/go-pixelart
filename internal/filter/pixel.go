@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"image"
 	"image/color"
+	"sync"
 )
 
 // Edge is a Predicate function
@@ -65,14 +66,25 @@ func (f *pixelFilter) Process(src *image.Image) *image.RGBA {
 	}
 
 	// init as checkerboard
+	colors := make(chan *Block, X*Y)
+	var wg sync.WaitGroup
 	for x := 0; x < X; x++ {
 		for y := 0; y < Y; y++ {
-			if (x%2 == 0 && y%2 == 0) || (x%2 == 1 && y%2 == 1) {
-				blockMap[x][y] = color.Black
-			} else {
-				blockMap[x][y] = color.White
-			}
+			wg.Add(1)
+			go func(x, y int) {
+				defer wg.Done()
+				if (x%2 == 0 && y%2 == 0) || (x%2 == 1 && y%2 == 1) {
+					colors <- &Block{x, y, color.Black}
+				} else {
+					colors <- &Block{x, y, color.White}
+				}
+			}(x, y)
 		}
+	}
+	wg.Wait()
+	close(colors)
+	for b := range colors {
+		blockMap[b.x][b.y] = b.c
 	}
 
 	xMax, yMax := X*blockSize, Y*blockSize
