@@ -4,7 +4,7 @@ import (
 	"image/color"
 	"sort"
 
-	"github.com/fairhive-labs/go-pixelart/colorutils"
+	"github.com/fairhive-labs/go-pixelart/internal/colorutils"
 )
 
 var (

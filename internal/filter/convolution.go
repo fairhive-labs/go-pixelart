@@ -6,7 +6,7 @@ import (
 	"image"
 	"image/color"
 
-	"github.com/fairhive-labs/go-pixelart/colorutils"
+	"github.com/fairhive-labs/go-pixelart/internal/colorutils"
 )
 
 const (
