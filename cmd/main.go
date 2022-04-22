@@ -28,12 +28,11 @@ func main() {
 	fmt.Printf("🤖 Image DECODED - Format is %q\n", f)
 
 	b := img.Bounds()
-	p := image.NewRGBA(image.Rect(0, 0, b.Max.X, b.Max.Y))
-	fmt.Printf("🖼  Dimension = [ %d x %d ]\n", b.Max.X, b.Max.Y)
+	fmt.Printf("🖼  Original Dimension = [ %d x %d ]\n", b.Max.X, b.Max.Y)
 
 	fmt.Println("👾 Processing Transformation...")
-	ft := filter.NewConvolutionFilter(&filter.RidgeDetection_3x3_hard, nil, nil)
-	ft.Process(&img, p)
+	ft := filter.NewPixelFilter(10, filter.ShortEdge, filter.CGA4)
+	p := ft.Process(&img)
 	fmt.Println("✅ Transformation is over")
 
 	if err := save(getFilename(src.Name(), time.Now()), f, p); err != nil {

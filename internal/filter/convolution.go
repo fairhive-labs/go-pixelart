@@ -68,14 +68,16 @@ func NewConvolutionFilter(k *kernel, pre, post TransformColor) *convolutionFilte
 	return &convolutionFilter{k, pre, post}
 }
 
-func (f *convolutionFilter) Process(src *image.Image, dst *image.RGBA) {
+func (f *convolutionFilter) Process(src *image.Image) *image.RGBA {
 	b := (*src).Bounds()
+	p := image.NewRGBA(image.Rect(0, 0, b.Max.X, b.Max.Y))
 	for x := 0; x < b.Max.X; x++ {
 		for y := 0; y < b.Max.Y; y++ {
 			c := processConvolution(src, x, y, b.Max.X, b.Max.Y, f.k, f.pre, f.post)
-			dst.Set(x, y, c)
+			p.Set(x, y, c)
 		}
 	}
+	return p
 }
 
 func NewKernel(s int, m matrix, f int) (*kernel, error) {
