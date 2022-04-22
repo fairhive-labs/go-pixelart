@@ -36,7 +36,10 @@ func main() {
 	ft.Process(&img, p)
 	fmt.Println("✅ Transformation is over")
 
-	save(getFilename(src.Name(), time.Now()), f, p)
+	if err := save(getFilename(src.Name(), time.Now()), f, p); err != nil {
+		fmt.Printf("error saving transformed picture: %v", err)
+		os.Exit(1)
+	}
 }
 
 func getFilename(f string, t time.Time) string {
@@ -45,10 +48,11 @@ func getFilename(f string, t time.Time) string {
 	return n + "_" + t.Format("20060102-150405") + e
 }
 
-func save(n, e string, p image.Image) {
+func save(n, e string, p image.Image) (err error) {
 	f, err := os.Create(n)
 	if err != nil {
 		fmt.Printf("Cannot create file %q", n)
+		return err
 	}
 	defer f.Close()
 
@@ -61,7 +65,8 @@ func save(n, e string, p image.Image) {
 
 	if err != nil {
 		fmt.Print("Cannot Encode Pixel Art", err)
+	} else {
+		fmt.Printf("💾 Pixel Art saved in file %q\n", f.Name())
 	}
-
-	fmt.Printf("💾 Pixel Art saved in file %q\n", f.Name())
+	return
 }
