@@ -4,7 +4,7 @@ import (
 	"image/color"
 	"sort"
 
-	"github.com/fairhive-labs/go-pixelart/utils"
+	"github.com/fairhive-labs/go-pixelart/colorutils"
 )
 
 type predicate func(uint8, uint8) bool
@@ -12,13 +12,13 @@ type predicate func(uint8, uint8) bool
 type ColorTransformation func(color.Color) color.Color
 
 func GrayColor(c color.Color) color.Color {
-	r, g, b, a := utils.RgbaValues(c)
+	r, g, b, a := colorutils.RgbaValues(c)
 	v := r/3 + g/3 + b/3
 	return color.RGBA{v, v, v, a}
 }
 
 func InvertColor(c color.Color) color.Color {
-	r, g, b, a := utils.RgbaValues(c)
+	r, g, b, a := colorutils.RgbaValues(c)
 	return color.RGBA{0xFF - r, 0xFF - g, 0xFF - b, a}
 }
 
@@ -27,7 +27,7 @@ func XRayColor(c color.Color) color.Color {
 }
 
 func ConstrastGrayColor(c color.Color, m uint8, p predicate) color.Color {
-	r, g, b, a := utils.RgbaValues(c)
+	r, g, b, a := colorutils.RgbaValues(c)
 	s := [3]uint8{r, g, b}
 	var v uint8 = m
 	for _, i := range s {
@@ -47,7 +47,7 @@ func LightGrayColor(c color.Color) color.Color { // get the brighest value in RG
 }
 
 func DarkContrast(c color.Color) color.Color {
-	r, g, b, a := utils.RgbaValues(c)
+	r, g, b, a := colorutils.RgbaValues(c)
 
 	s := []uint8{r, g, b}
 	sort.Slice(s, func(i, j int) bool {

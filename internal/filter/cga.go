@@ -4,7 +4,7 @@ import (
 	"image/color"
 	"sort"
 
-	"github.com/fairhive-labs/go-pixelart/utils"
+	"github.com/fairhive-labs/go-pixelart/colorutils"
 )
 
 var (
@@ -30,7 +30,7 @@ func init() {
 func generatePalette(t []uint32) color.Palette {
 	c := make([]color.Color, len(t))
 	for i, e := range t {
-		c[i] = utils.CreateColor(e)
+		c[i] = colorutils.CreateColor(e)
 	}
 	return c
 }
@@ -38,9 +38,9 @@ func generatePalette(t []uint32) color.Palette {
 func initCGA64Table() []uint32 {
 	s := make([]uint32, 64)
 	for i := 0; i < 64; i++ {
-		s[i] = utils.ConvertBits(uint32(i), 3)
+		s[i] = colorutils.ConvertBits(uint32(i), 3)
 	}
-	sort.Slice(s, func(i, j int) bool { return utils.SortAsc(s, i, j) })
+	sort.Slice(s, func(i, j int) bool { return colorutils.SortAsc(s, i, j) })
 	return s
 }
 
@@ -101,7 +101,7 @@ func CGA16(c color.Color) color.Color {
 }
 
 func CGA4(c color.Color) (n color.Color) {
-	h := utils.HexValue(c)
+	h := colorutils.HexValue(c)
 	t := CGAPalettes[4]
 	var m uint32 = 0x1000000
 	i := (h / (m >> 2))
@@ -109,7 +109,7 @@ func CGA4(c color.Color) (n color.Color) {
 }
 
 func CGA2(c color.Color) (n color.Color) {
-	h := utils.HexValue(c)
+	h := colorutils.HexValue(c)
 	t := CGAPalettes[2]
 	var m uint32 = 0x1000000
 	i := (h / (m >> 1))

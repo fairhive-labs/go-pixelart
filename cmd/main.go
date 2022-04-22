@@ -9,7 +9,7 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/fairhive-labs/go-pixelart/filter"
+	"github.com/fairhive-labs/go-pixelart/internal/filter"
 )
 
 func main() {

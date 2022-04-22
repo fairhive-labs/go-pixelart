@@ -7,7 +7,7 @@ import (
 	"image/color"
 	"log"
 
-	"github.com/fairhive-labs/go-pixelart/utils"
+	"github.com/fairhive-labs/go-pixelart/colorutils"
 )
 
 type Matrix []int
@@ -91,7 +91,7 @@ func NewKernel(s int, m Matrix, f int) (*kernel, error) {
 
 func ProcessConvolution(k *kernel, preProcessing ColorTransformation, img *image.Image, x, y, xmax, ymax int, postProcessing ColorTransformation) color.Color {
 	if postProcessing == nil {
-		postProcessing = utils.Identity
+		postProcessing = colorutils.Identity
 	}
 
 	if k == nil {
@@ -111,7 +111,7 @@ func ProcessConvolution(k *kernel, preProcessing ColorTransformation, img *image
 			} else {
 				c = getPixel(preProcessing, img, x, y)
 			}
-			r, g, b, _ := utils.RgbaValues(c)
+			r, g, b, _ := colorutils.RgbaValues(c)
 			rs += k.matrix[j*s+i] * int(r)
 			gs += k.matrix[j*s+i] * int(g)
 			bs += k.matrix[j*s+i] * int(b)
@@ -129,7 +129,7 @@ func ProcessConvolution(k *kernel, preProcessing ColorTransformation, img *image
 
 func getPixel(t ColorTransformation, img *image.Image, x, y int) color.Color {
 	if t == nil {
-		t = utils.Identity
+		t = colorutils.Identity
 	}
 	return t((*img).At(x, y))
 }
