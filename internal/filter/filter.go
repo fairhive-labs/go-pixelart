@@ -1,15 +1,40 @@
 package filter
 
 import (
+	"image"
 	"image/color"
 	"sort"
 
 	"github.com/fairhive-labs/go-pixelart/colorutils"
 )
 
+type Filter interface {
+	//Process image transformation from source src to destination dst
+	Process(src, dst *image.Image) error
+}
+
+type basicFilter struct {
+	transform TransformColor
+}
+
 type predicate func(uint8, uint8) bool
 
-type ColorTransformation func(color.Color) color.Color
+type TransformColor func(color.Color) color.Color
+
+func NewBasicFilter(transform TransformColor) *basicFilter {
+	return &basicFilter{transform}
+}
+
+func (f *basicFilter) Process(src *image.Image, dst *image.RGBA) (err error) {
+	b := (*src).Bounds()
+	for x := 0; x < b.Max.X; x++ {
+		for y := 0; y < b.Max.Y; y++ {
+			c := f.transform((*src).At(x, y))
+			(*dst).Set(x, y, c)
+		}
+	}
+	return
+}
 
 func GrayColor(c color.Color) color.Color {
 	r, g, b, a := colorutils.RgbaValues(c)

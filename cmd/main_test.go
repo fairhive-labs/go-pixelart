@@ -15,7 +15,7 @@ func TestGetFilename(t *testing.T) {
 		t.FailNow()
 	}
 
-	got := GetFilename(f, ti)
+	got := getFilename(f, ti)
 	if got != "jsie_20220303-150405.png" {
 		t.Errorf("GetFilename(f, ti) = %s; want jsie_20220303-150405.png", got)
 		t.FailNow()

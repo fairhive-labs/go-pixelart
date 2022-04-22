@@ -10,12 +10,17 @@ import (
 	"github.com/fairhive-labs/go-pixelart/colorutils"
 )
 
-type Matrix []int
+type matrix []int
 
 type kernel struct {
 	size   int
-	matrix Matrix
+	matrix matrix
 	factor int
+}
+
+type Convolution struct {
+	k       *kernel
+	process func(img *image.Image, x, y, xmax, ymax int, k *kernel, preProcessing, postProcessing TransformColor) color.Color
 }
 
 const (
@@ -23,11 +28,11 @@ const (
 )
 
 var (
-	ErrNilMatrix          = errors.New("kernel matrix cannot be nil")
-	ErrEmptyMatrix        = errors.New("kernel matrix cannot be empty")
-	ErrKernelSize         = fmt.Errorf("unsupported kernel size, min kernel size = %d", Min)
-	ErrMalformatedMatrix  = errors.New("kernel size and matrix length are incompatible")
-	ErrIncompatibleFactor = errors.New("kernel factor cannot be 0")
+	errNilMatrix          = errors.New("kernel matrix cannot be nil")
+	errEmptyMatrix        = errors.New("kernel matrix cannot be empty")
+	errKernelSize         = fmt.Errorf("unsupported kernel size, min kernel size = %d", Min)
+	errMalformatedMatrix  = errors.New("kernel size and matrix length are incompatible")
+	errIncompatibleFactor = errors.New("kernel factor cannot be 0")
 
 	Identity_3x3 = kernel{
 		3,
@@ -60,36 +65,36 @@ var (
 	}
 )
 
-func NewKernel(s int, m Matrix, f int) (*kernel, error) {
+func NewKernel(s int, m matrix, f int) (*kernel, error) {
 	if m == nil {
-		return nil, ErrNilMatrix
+		return nil, errNilMatrix
 	}
 	if len(m) == 0 {
-		return nil, ErrEmptyMatrix
+		return nil, errEmptyMatrix
 	}
 
 	if s < Min {
 		log.Printf("kernel size = %d\n", s)
-		return nil, ErrKernelSize
+		return nil, errKernelSize
 	}
 	if s%2 == 0 {
 		log.Printf("kernel size = %d, kernel size must be an odd number\n", s)
-		return nil, ErrKernelSize
+		return nil, errKernelSize
 	}
 	if s*s != len(m) {
 		log.Printf("kernel matrix contains %d elements and shoud contain %d elements\n", len(m), s*s)
-		return nil, ErrMalformatedMatrix
+		return nil, errMalformatedMatrix
 	}
 
 	if f == 0 {
 		log.Printf("incompatible factor %d", f)
-		return nil, ErrIncompatibleFactor
+		return nil, errIncompatibleFactor
 	}
 
 	return &kernel{s, m, f}, nil
 }
 
-func ProcessConvolution(k *kernel, preProcessing ColorTransformation, img *image.Image, x, y, xmax, ymax int, postProcessing ColorTransformation) color.Color {
+func ProcessConvolution(img *image.Image, x, y, xmax, ymax int, k *kernel, preProcessing, postProcessing TransformColor) color.Color {
 	if postProcessing == nil {
 		postProcessing = colorutils.Identity
 	}
@@ -127,7 +132,7 @@ func ProcessConvolution(k *kernel, preProcessing ColorTransformation, img *image
 	return postProcessing(color.RGBA{uint8(correctValue(rs)), uint8(correctValue(gs)), uint8(correctValue(bs)), 0xFF})
 }
 
-func getPixel(t ColorTransformation, img *image.Image, x, y int) color.Color {
+func getPixel(t TransformColor, img *image.Image, x, y int) color.Color {
 	if t == nil {
 		t = colorutils.Identity
 	}
@@ -147,11 +152,11 @@ func correctValue(x int) int {
 func Gauss(s int) (*kernel, error) {
 	if s < Min {
 		log.Printf("kernel size = %d\n", s)
-		return nil, ErrKernelSize
+		return nil, errKernelSize
 	}
 	if s%2 == 0 {
 		log.Printf("kernel size = %d, kernel size must be an odd number\n", s)
-		return nil, ErrKernelSize
+		return nil, errKernelSize
 	}
 	n := s * s
 	m := make([]int, n)

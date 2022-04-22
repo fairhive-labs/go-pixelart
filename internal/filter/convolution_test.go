@@ -9,7 +9,7 @@ func TestNewKernel(t *testing.T) {
 	tt := []struct {
 		name string
 		s    int
-		m    Matrix
+		m    matrix
 		f    int
 		err  error
 	}{
@@ -25,56 +25,56 @@ func TestNewKernel(t *testing.T) {
 			3,
 			nil,
 			1,
-			ErrNilMatrix,
+			errNilMatrix,
 		},
 		{
 			"empty matrix",
 			3,
 			[]int{},
 			1,
-			ErrEmptyMatrix,
+			errEmptyMatrix,
 		},
 		{
 			"zero size",
 			0,
 			[]int{0, 0, 0, 0, 1, 0, 0, 0, 0},
 			1,
-			ErrKernelSize,
+			errKernelSize,
 		},
 		{
 			"too small size",
 			2,
 			[]int{0, 0, 0, 0, 1, 0, 0, 0, 0},
 			1,
-			ErrKernelSize,
+			errKernelSize,
 		},
 		{
 			"negative size",
 			-1,
 			[]int{0, 0, 0, 0, 1, 0, 0, 0, 0},
 			1,
-			ErrKernelSize,
+			errKernelSize,
 		},
 		{
 			"even size",
 			8,
 			[]int{0, 0, 0, 0, 1, 0, 0, 0, 0},
 			1,
-			ErrKernelSize,
+			errKernelSize,
 		},
 		{
 			"malformated matrix",
 			3,
 			[]int{0, 0, 0, 0, 1, 0, 0, 0, 0, 12345},
 			1,
-			ErrMalformatedMatrix,
+			errMalformatedMatrix,
 		},
 		{
 			"factor is zero",
 			3,
 			[]int{0, 0, 0, 0, 1, 0, 0, 0, 0},
 			0,
-			ErrIncompatibleFactor,
+			errIncompatibleFactor,
 		},
 	}
 
