@@ -31,7 +31,7 @@ func main() {
 	fmt.Printf("🖼  Original Dimension = [ %d x %d ]\n", b.Max.X, b.Max.Y)
 
 	fmt.Println("👾 Processing Transformation...")
-	ft := filter.NewPixelFilter(100, filter.ShortEdge, filter.CGA2)
+	ft := filter.NewPixelFilter(100, filter.ShortEdge, filter.CGA4)
 	p := ft.Process(&img)
 	fmt.Println("✅ Transformation is over")
 
