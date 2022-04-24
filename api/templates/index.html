@@ -6,9 +6,11 @@
 
     <form action="/pixelize" method="POST" enctype="multipart/form-data">
         <label for="slices">Slices (how many pixel blocks):</label>
-        <input type="number" name="slices" id="slices" min="1" max="1000" step="1" value="100">
+        <input type="number" name="slices" id="slices" min="1" max="1000" step="1" value="100"></br>
+        <label for="width">Width (px):</label>
+        <input type="number" name="width" id="width" step="1" value="500"></br>
         <p>Click on the "Choose File" button to upload a PNG file:</p>
-        <input type="file" id="file" name="file" accept="image/png, image/jpeg">
+        <input type="file" id="file" name="file" accept="image/png, image/jpeg"></br></br>
         <button type="submit">Pixelize</button>
     </form>
 

@@ -34,6 +34,7 @@ func main() {
 
 type PixelizeForm struct {
 	Slices int                   `form:"slices" binding:"required,min=1,max=1000"`
+	Width  int                   `form:"width"`
 	File   *multipart.FileHeader `form:"file" binding:"required"`
 }
 
@@ -67,6 +68,7 @@ func pixelize(c *gin.Context) {
 	ft := filter.NewPixelFilter(form.Slices, filter.ShortEdge, filter.CGA64)
 	p := ft.Process(&img)
 	log.Println("✅ Transformation is over")
+
 	buf := bytes.Buffer{}
 	switch f {
 	case "png":
@@ -87,9 +89,8 @@ func pixelize(c *gin.Context) {
 	}
 	data := base64.StdEncoding.EncodeToString(buf.Bytes())
 	c.HTML(http.StatusCreated, "pixelart_template.html", gin.H{
-		"width":  500,
-		"height": -1,
-		"data":   data,
+		"width": form.Width,
+		"data":  data,
 	})
 	log.Printf("🎨 Pixel Art produced\n")
 }
