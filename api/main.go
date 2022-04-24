@@ -33,14 +33,14 @@ func main() {
 }
 
 type PixelizeForm struct {
-	Slices int                   `form:"slices" binding:"required"`
+	Slices int                   `form:"slices" binding:"required,min=1,max=1000"`
 	File   *multipart.FileHeader `form:"file" binding:"required"`
 }
 
 func pixelize(c *gin.Context) {
 	var form PixelizeForm
 	if err := c.ShouldBind(&form); err != nil {
-		c.AbortWithError(http.StatusBadRequest, err)
+		c.String(http.StatusBadRequest, err.Error())
 		return
 	}
 	log.Printf("📏 Slices = %d \n", form.Slices)
