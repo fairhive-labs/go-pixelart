@@ -2,9 +2,11 @@ package main
 
 import (
 	"bytes"
+	"embed"
 	"encoding/base64"
 	"errors"
 	"fmt"
+	"html/template"
 	"image"
 	"image/png"
 	"net/http"
@@ -13,8 +15,13 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+//go:embed templates
+var tfs embed.FS
+
 func main() {
 	r := gin.Default()
+	t := template.Must(template.ParseFS(tfs, "templates/*"))
+	r.SetHTMLTemplate(t)
 	r.MaxMultipartMemory = 16 << 20 // 16 MiB
 	r.POST("/pixelize", func(c *gin.Context) {
 		file, err := c.FormFile("file")
@@ -40,7 +47,7 @@ func main() {
 		fmt.Printf("🖼  Original Dimension = [ %d x %d ]\n", b.Max.X, b.Max.Y)
 
 		fmt.Println("👾 Processing Transformation...")
-		ft := filter.NewPixelFilter(100, filter.ShortEdge, filter.CGA4)
+		ft := filter.NewPixelFilter(200, filter.ShortEdge, filter.CGA64)
 		p := ft.Process(&img)
 		fmt.Println("✅ Transformation is over")
 		switch f {
@@ -52,11 +59,14 @@ func main() {
 				return
 			}
 			data := base64.StdEncoding.EncodeToString(buf.Bytes())
-			c.String(http.StatusOK, data)
+			c.HTML(http.StatusOK, "pixelart_template.html", gin.H{
+				"width":  500,
+				"height": -1,
+				"data":   data,
+			})
 			fmt.Printf("🎨 Pixel Art produced\n")
 		default:
 			c.AbortWithError(http.StatusInternalServerError, errors.New("unsupported picture type"))
-			return
 		}
 
 	})
