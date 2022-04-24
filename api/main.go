@@ -9,8 +9,8 @@ import (
 	"image"
 	"image/png"
 	"log"
+	"mime/multipart"
 	"net/http"
-	"strconv"
 
 	"github.com/fairhive-labs/go-pixelart/internal/filter"
 	"github.com/gin-gonic/gin"
@@ -32,41 +32,42 @@ func main() {
 	log.Println(r.Run())
 }
 
+type PixelizeForm struct {
+	Slices int                   `form:"slices" binding:"required"`
+	File   *multipart.FileHeader `form:"file" binding:"required"`
+}
+
 func pixelize(c *gin.Context) {
-	slicesForm := c.DefaultPostForm("slices", "100")
-	slices, err := strconv.Atoi(slicesForm)
-	if err != nil {
+	var form PixelizeForm
+	if err := c.ShouldBind(&form); err != nil {
 		c.AbortWithError(http.StatusBadRequest, err)
 		return
 	}
-	log.Printf("📏 Slices = %d \n", slices)
+	log.Printf("📏 Slices = %d \n", form.Slices)
+	log.Printf("👉 Source file %q opened\n", form.File.Filename)
 
-	file, err := c.FormFile("file")
-	if err != nil {
-		c.AbortWithError(http.StatusBadRequest, err)
-		return
-	}
-	log.Printf("👉 Source file %q opened\n", file.Filename)
-
-	src, err := file.Open()
+	src, err := form.File.Open()
 	if err != nil {
 		c.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}
 	defer src.Close()
+
 	img, f, err := image.Decode(src)
 	if err != nil {
 		c.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}
 	log.Printf("🤖 Image DECODED - Format is %q\n", f)
+
 	b := img.Bounds()
 	log.Printf("🖼  Original Dimension = [ %d x %d ]\n", b.Max.X, b.Max.Y)
 
 	log.Println("👾 Processing Transformation...")
-	ft := filter.NewPixelFilter(slices, filter.ShortEdge, filter.CGA64)
+	ft := filter.NewPixelFilter(form.Slices, filter.ShortEdge, filter.CGA64)
 	p := ft.Process(&img)
 	log.Println("✅ Transformation is over")
+
 	switch f {
 	case "png":
 		buf := bytes.Buffer{}
