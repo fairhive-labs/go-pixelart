@@ -2,6 +2,8 @@ module github.com/fairhive-labs/go-pixelart
 
 go 1.18
 
+// +heroku install ./app/...
+// +heroku goVersion 1.18
 require github.com/gin-gonic/gin v1.7.7
 
 require (
