@@ -6,6 +6,7 @@ import (
 	"encoding/base64"
 	"html/template"
 	"image"
+	"image/jpeg"
 	"image/png"
 	"log"
 	"mime/multipart"
@@ -66,24 +67,29 @@ func pixelize(c *gin.Context) {
 	ft := filter.NewPixelFilter(form.Slices, filter.ShortEdge, filter.CGA64)
 	p := ft.Process(&img)
 	log.Println("✅ Transformation is over")
-
+	buf := bytes.Buffer{}
 	switch f {
 	case "png":
-		buf := bytes.Buffer{}
 		err = png.Encode(&buf, p)
 		if err != nil {
 			c.String(http.StatusInternalServerError, err.Error())
 			return
 		}
-		data := base64.StdEncoding.EncodeToString(buf.Bytes())
-		c.HTML(http.StatusCreated, "pixelart_template.html", gin.H{
-			"width":  500,
-			"height": -1,
-			"data":   data,
-		})
-		log.Printf("🎨 Pixel Art produced\n")
+	case "jpeg":
+		err = jpeg.Encode(&buf, p, nil) //default quality is 75%
+		if err != nil {
+			c.String(http.StatusInternalServerError, err.Error())
+			return
+		}
 	default:
 		c.String(http.StatusInternalServerError, "unsupported picture format")
+		return
 	}
-
+	data := base64.StdEncoding.EncodeToString(buf.Bytes())
+	c.HTML(http.StatusCreated, "pixelart_template.html", gin.H{
+		"width":  500,
+		"height": -1,
+		"data":   data,
+	})
+	log.Printf("🎨 Pixel Art produced\n")
 }
