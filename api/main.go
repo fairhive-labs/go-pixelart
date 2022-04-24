@@ -33,9 +33,10 @@ func main() {
 }
 
 type PixelizeForm struct {
-	Slices int                   `form:"slices" binding:"required,min=1,max=1000"`
-	Width  int                   `form:"width"`
-	File   *multipart.FileHeader `form:"file" binding:"required"`
+	Slices    int                   `form:"slices" binding:"required,min=1,max=1000"`
+	Width     int                   `form:"width"`
+	ShortEdge string                `form:"edge" binding:"required"`
+	File      *multipart.FileHeader `form:"file" binding:"required"`
 }
 
 func pixelize(c *gin.Context) {
