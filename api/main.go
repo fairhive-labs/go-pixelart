@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"embed"
 	"encoding/base64"
-	"errors"
 	"html/template"
 	"image"
 	"image/png"
@@ -48,14 +47,14 @@ func pixelize(c *gin.Context) {
 
 	src, err := form.File.Open()
 	if err != nil {
-		c.AbortWithError(http.StatusInternalServerError, err)
+		c.String(http.StatusInternalServerError, err.Error())
 		return
 	}
 	defer src.Close()
 
 	img, f, err := image.Decode(src)
 	if err != nil {
-		c.AbortWithError(http.StatusInternalServerError, err)
+		c.String(http.StatusInternalServerError, err.Error())
 		return
 	}
 	log.Printf("🤖 Image DECODED - Format is %q\n", f)
@@ -73,7 +72,7 @@ func pixelize(c *gin.Context) {
 		buf := bytes.Buffer{}
 		err = png.Encode(&buf, p)
 		if err != nil {
-			c.AbortWithError(http.StatusInternalServerError, err)
+			c.String(http.StatusInternalServerError, err.Error())
 			return
 		}
 		data := base64.StdEncoding.EncodeToString(buf.Bytes())
@@ -84,7 +83,7 @@ func pixelize(c *gin.Context) {
 		})
 		log.Printf("🎨 Pixel Art produced\n")
 	default:
-		c.AbortWithError(http.StatusInternalServerError, errors.New("unsupported picture type"))
+		c.String(http.StatusInternalServerError, "unsupported picture format")
 	}
 
 }
