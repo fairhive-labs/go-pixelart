@@ -1,9 +1,9 @@
 package filter
 
 import (
-	"fmt"
 	"image"
 	"image/color"
+	"log"
 
 	"github.com/fairhive-labs/go-pixelart/internal/colorutils"
 )
@@ -48,7 +48,7 @@ func (f pixelFilter) getBlockSize(bx, by int) int {
 func (f *pixelFilter) Process(src *image.Image) *image.RGBA {
 	b := (*src).Bounds()
 	blockSize := f.getBlockSize(b.Max.X, b.Max.Y)
-	fmt.Printf("📐 block size = %d pixels\n", blockSize)
+	log.Printf("📐 block size = %d pixels\n", blockSize)
 
 	X := b.Max.X / blockSize
 	if b.Max.X%blockSize != 0 {
@@ -105,7 +105,7 @@ func (f *pixelFilter) Process(src *image.Image) *image.RGBA {
 
 	// create new picture with whole blocks
 	xMax, yMax := X*blockSize, Y*blockSize
-	fmt.Printf("🖼  New Dimension = [ %d x %d ]\n", xMax, yMax)
+	log.Printf("🖼  New Dimension = [ %d x %d ]\n", xMax, yMax)
 	p := image.NewRGBA(image.Rect(0, 0, xMax, yMax))
 	for x := 0; x < xMax; x++ {
 		for y := 0; y < yMax; y++ {

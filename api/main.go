@@ -5,10 +5,10 @@ import (
 	"embed"
 	"encoding/base64"
 	"errors"
-	"fmt"
 	"html/template"
 	"image"
 	"image/png"
+	"log"
 	"net/http"
 
 	"github.com/fairhive-labs/go-pixelart/internal/filter"
@@ -23,13 +23,16 @@ func main() {
 	t := template.Must(template.ParseFS(tfs, "templates/*"))
 	r.SetHTMLTemplate(t)
 	r.MaxMultipartMemory = 16 << 20 // 16 MiB
+	r.GET("/", func(c *gin.Context) {
+		c.HTML(http.StatusOK, "index.html", nil)
+	})
 	r.POST("/pixelize", func(c *gin.Context) {
 		file, err := c.FormFile("file")
 		if err != nil {
 			c.AbortWithError(http.StatusBadRequest, err)
 			return
 		}
-		fmt.Printf("👉 Source file %q opened\n", file.Filename)
+		log.Printf("👉 Source file %q opened\n", file.Filename)
 
 		src, err := file.Open()
 		if err != nil {
@@ -42,14 +45,14 @@ func main() {
 			c.AbortWithError(http.StatusInternalServerError, err)
 			return
 		}
-		fmt.Printf("🤖 Image DECODED - Format is %q\n", f)
+		log.Printf("🤖 Image DECODED - Format is %q\n", f)
 		b := img.Bounds()
-		fmt.Printf("🖼  Original Dimension = [ %d x %d ]\n", b.Max.X, b.Max.Y)
+		log.Printf("🖼  Original Dimension = [ %d x %d ]\n", b.Max.X, b.Max.Y)
 
-		fmt.Println("👾 Processing Transformation...")
+		log.Println("👾 Processing Transformation...")
 		ft := filter.NewPixelFilter(200, filter.ShortEdge, filter.CGA64)
 		p := ft.Process(&img)
-		fmt.Println("✅ Transformation is over")
+		log.Println("✅ Transformation is over")
 		switch f {
 		case "png":
 			buf := bytes.Buffer{}
@@ -59,16 +62,16 @@ func main() {
 				return
 			}
 			data := base64.StdEncoding.EncodeToString(buf.Bytes())
-			c.HTML(http.StatusOK, "pixelart_template.html", gin.H{
+			c.HTML(http.StatusCreated, "pixelart_template.html", gin.H{
 				"width":  500,
 				"height": -1,
 				"data":   data,
 			})
-			fmt.Printf("🎨 Pixel Art produced\n")
+			log.Printf("🎨 Pixel Art produced\n")
 		default:
 			c.AbortWithError(http.StatusInternalServerError, errors.New("unsupported picture type"))
 		}
 
 	})
-	fmt.Println(r.Run())
+	log.Println(r.Run())
 }

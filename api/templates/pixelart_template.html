@@ -4,12 +4,28 @@
 
 <head>
     <title>fairhive pixelart</title>
+    <style>
+        .container {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+        }
+
+        button {
+            margin-top: 16px;
+        }
+    </style>
 </head>
 
 <body>
-    <div>
+    <div class="container">
         <img width="{{.width}}" height="{{.height}}" src="data:image/png;base64,{{.data}}"
             alt="fairhive - pixel art image" />
+        <a href="/" target="_blank">
+            <button>Back</button>
+        </a>
     </div>
 </body>
 
