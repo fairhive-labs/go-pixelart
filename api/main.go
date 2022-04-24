@@ -1,6 +1,8 @@
 package main
 
 import (
+	"bytes"
+	"encoding/base64"
 	"errors"
 	"fmt"
 	"image"
@@ -38,17 +40,24 @@ func main() {
 		fmt.Printf("🖼  Original Dimension = [ %d x %d ]\n", b.Max.X, b.Max.Y)
 
 		fmt.Println("👾 Processing Transformation...")
-		ft := filter.NewPixelFilter(100, filter.ShortEdge, filter.CGA64)
+		ft := filter.NewPixelFilter(100, filter.ShortEdge, filter.CGA4)
 		p := ft.Process(&img)
 		fmt.Println("✅ Transformation is over")
 		switch f {
 		case "png":
-			err = png.Encode(c.Writer, p)
+			buf := bytes.Buffer{}
+			err = png.Encode(&buf, p)
+			if err != nil {
+				c.AbortWithError(http.StatusInternalServerError, err)
+				return
+			}
+			data := base64.StdEncoding.EncodeToString(buf.Bytes())
+			c.String(http.StatusOK, data)
+			fmt.Printf("🎨 Pixel Art produced\n")
 		default:
 			c.AbortWithError(http.StatusInternalServerError, errors.New("unsupported picture type"))
 			return
 		}
-		fmt.Printf("🎨 Pixel Art produced\n")
 
 	})
 	fmt.Println(r.Run())
