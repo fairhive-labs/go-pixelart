@@ -33,10 +33,10 @@ func main() {
 }
 
 type PixelizeForm struct {
-	Slices    int                   `form:"slices" binding:"required,min=1,max=1000"`
-	Width     int                   `form:"width"`
-	ShortEdge string                `form:"edge" binding:"required"`
-	File      *multipart.FileHeader `form:"file" binding:"required"`
+	Slices int                   `form:"slices" binding:"required,min=1,max=1000"`
+	Width  int                   `form:"width"`
+	Edge   string                `form:"edge" binding:"required,oneof=short long"`
+	File   *multipart.FileHeader `form:"file" binding:"required"`
 }
 
 func pixelize(c *gin.Context) {
@@ -47,6 +47,12 @@ func pixelize(c *gin.Context) {
 	}
 	log.Printf("📏 Slices = %d \n", form.Slices)
 	log.Printf("👉 Source file %q opened\n", form.File.Filename)
+
+	edge := filter.ShortEdge
+	if form.Edge == "long" {
+		edge = filter.LongEdge
+		log.Println("🏗  Using Long Edge")
+	}
 
 	src, err := form.File.Open()
 	if err != nil {
@@ -66,7 +72,7 @@ func pixelize(c *gin.Context) {
 	log.Printf("🖼  Original Dimension = [ %d x %d ]\n", b.Max.X, b.Max.Y)
 
 	log.Println("👾 Processing Transformation...")
-	ft := filter.NewPixelFilter(form.Slices, filter.ShortEdge, filter.CGA64)
+	ft := filter.NewPixelFilter(form.Slices, edge, filter.CGA64)
 	p := ft.Process(&img)
 	log.Println("✅ Transformation is over")
 
