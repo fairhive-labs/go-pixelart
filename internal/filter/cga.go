@@ -51,14 +51,23 @@ func CGA64(c color.Color) color.Color {
 	b &= 0xFF
 
 	var m uint32 = 0x3
-	if (r/3 + g/3 + b/3) > (0x100 >> 1) { // compute the r,g,b average brightness
+	if r > (0x100 >> 1) {
 		m = 0x4
 	}
-
 	r = (m * r) / 0x100
 	r &= 0x3
+
+	m = 0x3
+	if g > (0x100 >> 1) {
+		m = 0x4
+	}
 	g = (m * g) / 0x100
 	g &= 0x3
+
+	m = 0x3
+	if b > (0x100 >> 1) {
+		m = 0x4
+	}
 	b = (m * b) / 0x100
 	b &= 0x3
 
