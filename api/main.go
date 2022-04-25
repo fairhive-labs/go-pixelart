@@ -103,8 +103,14 @@ func pixelize(c *gin.Context) {
 	log.Printf("🖼  Original Dimension = [ %d x %d ]\n", b.Max.X, b.Max.Y)
 
 	log.Println("👾 Processing Transformation...")
+	if form.Slices > b.Max.X || form.Slices > b.Max.Y {
+		log.Println("❌ Transformation aborted")
+		c.String(http.StatusBadRequest, "Cannot cut [ %d x %d ] into %d slices", b.Max.X, b.Max.Y, form.Slices)
+		return
+	}
 	fl, err := getFilter(form.Filter)
 	if err != nil {
+		log.Println("❌ Transformation aborted")
 		c.String(http.StatusBadRequest, err.Error())
 		return
 	}
