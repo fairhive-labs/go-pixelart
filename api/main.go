@@ -72,7 +72,7 @@ func pixelize(c *gin.Context) {
 	log.Printf("🖼  Original Dimension = [ %d x %d ]\n", b.Max.X, b.Max.Y)
 
 	log.Println("👾 Processing Transformation...")
-	ft := filter.NewPixelFilter(form.Slices, edge, filter.CGA64)
+	ft := filter.NewPixelFilter(form.Slices, edge, filter.EGA)
 	p := ft.Process(&img)
 	log.Println("✅ Transformation is over")
 

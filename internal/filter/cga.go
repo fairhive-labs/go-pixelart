@@ -44,7 +44,7 @@ func initCGA64Table() []uint32 {
 	return s
 }
 
-func CGA64(c color.Color) color.Color {
+func EGA(c color.Color) color.Color {
 	r, g, b, _ := c.RGBA()
 	r &= 0xFF
 	g &= 0xFF
@@ -123,17 +123,4 @@ func CGA2(c color.Color) (n color.Color) {
 	var m uint32 = 0x1000000
 	i := (h / (m >> 1))
 	return t[i]
-}
-
-func VGA(c color.Color) color.Color {
-	r, g, b, _ := c.RGBA()
-	r &= 0xFF
-	g &= 0xFF
-	b &= 0xFF
-
-	r = r >> 2
-	g = g >> 2
-	b = b >> 2
-
-	return color.RGBA{uint8(r), uint8(g), uint8(b), 0xFF}
 }
