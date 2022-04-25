@@ -6,16 +6,27 @@
 
     <form action="/pixelize" method="POST" enctype="multipart/form-data">
         <label for="slices">Slices (how many pixel blocks):</label>
-        <input type="number" name="slices" id="slices" min="1" max="1000" step="1" value="100"></br>
+        <input type="number" name="slices" id="slices" min="1" max="1000" step="1" value="100"></br></br>
+
+        <label for="width">Width (px):</label>
+        <input type="number" name="width" id="width" step="1" value="500"></br>
 
         <p>Please select the Edge type (default is Short):</p>
         <input type="radio" id="short" name="edge" value="short" checked>
         <label for="short">Short Edge</label></br>
         <input type="radio" id="long" name="edge" value="long">
-        <label for="long">Long Edge</label></br></br>
+        <label for="long">Long Edge</label></br>
 
-        <label for="width">Width (px):</label>
-        <input type="number" name="width" id="width" step="1" value="500"></br>
+        <p>Please select a Filter (default is EGA):</p>
+        <select name="filter">
+            {{ range $k,$v := . }}
+            {{ if eq $k "ega"}}
+            <option value="{{$k}}" selected>{{$k | ToUpper}}</option>
+            {{ else }}
+            <option value="{{$k}}">{{$k | ToUpper}}</option>
+            {{ end }}
+            {{ end }}
+        </select>
 
         <p>Click on the "Choose File" button to upload a PNG/JPEG file:</p>
         <input type="file" id="file" name="file" accept="image/png, image/jpeg"></br></br>
