@@ -54,8 +54,8 @@
                         <label for="long">Long Edge</label>
                     </div>
                     <div class="mb-3">
-                        <p>Filter:</p>
-                        <select name="filter">
+                        <label for="filter" class="form-label">Filter:</label>
+                        <select name="filter" class="form-select" aria-label="filter">
                             {{ range $k,$v := . }}
                             {{ if eq $k "ega"}}
                             <option value="{{$k}}" selected>{{$k | ToUpper}}</option>
