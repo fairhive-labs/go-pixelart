@@ -19,10 +19,6 @@
             height: 100%;
         }
 
-        button {
-            margin-top: 16px;
-        }
-
         img {
             image-orientation: from-image;
         }
@@ -31,15 +27,21 @@
 
 <body>
     <div class="container">
-        {{ if (gt .width 0) }}
-        <img width="{{.width}}" src="data:image/png;base64,{{.data}}" alt="fairhive - pixel art image" />
-        {{ else }}
-        <img src="data:image/png;base64,{{.data}}" alt="fairhive - pixel art image" />
-        {{ end }}
-        <a href="/">
-            <!-- target="_blank" -->
-            <button class="btn btn-warning">Back</button>
-        </a>
+        <div class="card text-white bg-dark mb-3">
+            <div class="card-body">
+                {{ if (gt .width 0) }}
+                <img width="{{.width}}" src="data:image/png;base64,{{.data}}" alt="fairhive - pixel art image" />
+                {{ else }}
+                <img src="data:image/png;base64,{{.data}}" alt="fairhive - pixel art image" />
+                {{ end }}
+            </div>
+            <div class="card-footer">
+                <div class="d-grid gap-2">
+                    <a class="btn btn-warning" href="/" target="_blank">Back</a>
+                </div>
+            </div>
+            </a>
+        </div>
     </div>
 </body>
 
