@@ -37,7 +37,7 @@
                     <div class="mb-3">
                         <label for="slices" class="form-label">Slices (how many pixel blocks):</label>
                         <input type="number" name="slices" id="slices" min="1" max="1000" step="1" value="100"
-                            class="form-control" aria-describedby="slicesHelp">
+                            class="form-control" aria-describedby="slicesHelp" required>
                         <div id="slicesHelp" class="form-text">Enter a value between 1 and 1000, cannot be larger than
                             the original picture width/height...</div>
                     </div>
@@ -49,8 +49,7 @@
                     <div class="mb-3">
                         <p>Edge type:</p>
                         <div class="form-check form-check-inline">
-                            <input class="form-check-input" type="radio" id="short" name="edge" value="short"
-                                checked>
+                            <input class="form-check-input" type="radio" id="short" name="edge" value="short" checked>
                             <label class="form-check-label" for="short">short</label>
                         </div>
                         <div class="form-check form-check-inline">
@@ -60,7 +59,7 @@
                     </div>
                     <div class="mb-3">
                         <label for="filter" class="form-label">Filter:</label>
-                        <select name="filter" class="form-select" aria-label="filter">
+                        <select name="filter" class="form-select" aria-label="filter" required>
                             {{ range $k,$v := . }}
                             {{ if eq $k "ega"}}
                             <option value="{{$k}}" selected>{{$k | ToUpper}}</option>
@@ -72,7 +71,11 @@
                     </div>
                     <div class="mb-3">
                         <label for="file" class="form-label">Upload a PNG/JPEG file:</label>
-                        <input class="form-control" type="file" id="file" name="file" accept="image/png, image/jpeg">
+                        <input class="form-control" type="file" id="file" name="file" accept="image/png, image/jpeg"
+                            required>
+                        <div class="invalid-feedback">
+                            Please select a picture.
+                        </div>
                     </div>
                     <button type="submit" class="btn btn-primary">Pixelize</button>
                 </form>
