@@ -72,16 +72,17 @@ func (f *pixelFilter) Process(src *image.Image) *image.RGBA {
 	for x := 0; x < X; x++ {
 		for y := 0; y < Y; y++ {
 			go func(x, y int) {
-				count, ra, ga, ba := 0, 0, 0, 0 // length + RGB averages
+				count, ra, ga, ba, aa := 0, 0, 0, 0, 0 // length + RGB averages
 				// read colors in original pictures
 				for i := x * blockSize; i < (x+1)*blockSize && i < b.Max.X; i++ {
 					for j := y * blockSize; j < (y+1)*blockSize && j < b.Max.Y; j++ {
 						count++
 						c := (*src).At(i, j)
-						rc, gc, bc, _ := colorutils.RgbaValues(c)
+						rc, gc, bc, ac := colorutils.RgbaValues(c)
 						ra += int(rc)
 						ga += int(gc)
 						ba += int(bc)
+						aa += int(ac)
 					}
 				}
 				//calcul averages
@@ -91,7 +92,9 @@ func (f *pixelFilter) Process(src *image.Image) *image.RGBA {
 				ga &= 0xFF
 				ba = ba / count
 				ba &= 0xFF
-				c := color.RGBA{uint8(ra), uint8(ga), uint8(ba), 0xFF}
+				aa = aa / count
+				aa &= 0xFF
+				c := color.RGBA{uint8(ra), uint8(ga), uint8(ba), uint8(aa)}
 				colors <- &Block{x, y, c}
 			}(x, y)
 		}
