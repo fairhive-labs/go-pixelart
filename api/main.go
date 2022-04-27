@@ -54,6 +54,7 @@ func main() {
 	r.SetHTMLTemplate(t)
 	r.MaxMultipartMemory = 16 << 20 // 16 MiB
 
+	r.Use(cors)
 	r.GET("/", func(c *gin.Context) {
 		c.HTML(http.StatusOK, "index.html", filters)
 	})
@@ -150,4 +151,17 @@ func pixelize(c *gin.Context) {
 		})
 	}
 	log.Printf("🎨 Pixel Art produced\n")
+}
+
+func cors(c *gin.Context) {
+	c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
+	c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
+	c.Writer.Header().Set("Access-Control-Allow-Headers", "origin, content-type, accept, authorization")
+	c.Writer.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+
+	if c.Request.Method == "OPTIONS" {
+		c.AbortWithStatus(http.StatusNoContent)
+		return
+	}
+	c.Next()
 }
