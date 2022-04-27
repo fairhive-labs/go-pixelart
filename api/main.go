@@ -196,6 +196,7 @@ func pixelize(c *gin.Context) {
 		c.JSON(http.StatusCreated, gin.H{
 			"data":     data,
 			"encoding": "base64",
+			"filter":   form.Filter,
 			"length":   len(data),
 		})
 	default:
