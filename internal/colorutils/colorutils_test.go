@@ -188,3 +188,17 @@ func TestCreateColor(t *testing.T) {
 		})
 	}
 }
+
+func TestIsTransparent(t *testing.T) {
+	c := color.RGBA{0x55, 0xAA, 0xFF, 0xFF}
+	if IsTransparent(c) {
+		t.Errorf("color cannot be transparent")
+		t.FailNow()
+	}
+
+	c = color.RGBA{0x55, 0xAA, 0xFF, 0}
+	if !IsTransparent(c) {
+		t.Errorf("color is transparent")
+		t.FailNow()
+	}
+}
