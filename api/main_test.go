@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"encoding/json"
 	"errors"
 	"io"
 	"mime/multipart"
@@ -95,12 +96,12 @@ func TestPixelize(t *testing.T) {
 	}
 	file, err := os.Open(path)
 	if err != nil {
-		t.Errorf("cannot open file %q: %v\n", path, err)
+		t.Errorf("error opening file %q: %v\n", path, err)
 		t.FailNow()
 	}
 	_, err = io.Copy(fw, file)
 	if err != nil {
-		t.Errorf("cannot copy file %q: %v\n", path, err)
+		t.Errorf("error copying file %q: %v\n", path, err)
 		t.FailNow()
 	}
 
@@ -113,8 +114,37 @@ func TestPixelize(t *testing.T) {
 	r.ServeHTTP(w, req)
 
 	if w.Code != http.StatusCreated {
-		t.Errorf(w.Body.String())
 		t.Errorf("incorrect status code, got %d, want %d\n", w.Code, http.StatusOK)
+		t.Errorf("body content: %v\n", w.Body.String())
 		t.FailNow()
 	}
+
+	var res struct {
+		Data     string
+		Encoding string
+		Filter   string
+		Length   int
+	}
+	if err := json.NewDecoder(w.Body).Decode(&res); err != nil {
+		t.Errorf("error decoding body %v: %v", w.Body.String(), err)
+		t.FailNow()
+	}
+
+	if res.Encoding != "base64" {
+		t.Errorf("incorrect encoding, got %v, want %v\n", res.Encoding, "base64")
+		t.FailNow()
+	}
+	if res.Filter != "cga4" {
+		t.Errorf("incorrect filter, got %v, want %v\n", res.Encoding, "cga4")
+		t.FailNow()
+	}
+	if res.Length != 4628 {
+		t.Errorf("incorrect length, got %d, want %d\n", res.Length, 4628)
+		t.FailNow()
+	}
+	if res.Data == "" {
+		t.Error("data cannot be empty")
+		t.FailNow()
+	}
+
 }
