@@ -45,6 +45,9 @@ func initCGA64Table() []uint32 {
 }
 
 func EGA(c color.Color) color.Color {
+	if colorutils.IsTransparent(c) {
+		return color.Transparent
+	}
 	r, g, b, _ := c.RGBA()
 	r &= 0xFF
 	g &= 0xFF
@@ -81,6 +84,9 @@ func EGA(c color.Color) color.Color {
 }
 
 func CGA16(c color.Color) color.Color {
+	if colorutils.IsTransparent(c) {
+		return color.Transparent
+	}
 	r, g, b, _ := c.RGBA()
 	r &= 0xFF
 	g &= 0xFF
@@ -110,6 +116,9 @@ func CGA16(c color.Color) color.Color {
 }
 
 func CGA4(c color.Color) (n color.Color) {
+	if colorutils.IsTransparent(c) {
+		return color.Transparent
+	}
 	h := colorutils.HexValue(c)
 	t := CGAPalettes[4]
 	var m uint32 = 0x1000000
@@ -118,9 +127,33 @@ func CGA4(c color.Color) (n color.Color) {
 }
 
 func CGA2(c color.Color) (n color.Color) {
+	if colorutils.IsTransparent(c) {
+		return color.Transparent
+	}
 	h := colorutils.HexValue(c)
 	t := CGAPalettes[2]
 	var m uint32 = 0x1000000
 	i := (h / (m >> 1))
 	return t[i]
+}
+
+func VGA(c color.Color) color.Color {
+	if colorutils.IsTransparent(c) {
+		return color.Transparent
+	}
+	r, g, b, _ := c.RGBA()
+
+	r = r >> 2
+	r &= 0x3F
+	r = (r << 2) | (r >> 4)
+
+	g = g >> 2
+	g &= 0x3F
+	g = (g << 2) | (g >> 4)
+
+	b = b >> 2
+	b &= 0x3F
+	b = (b << 2) | (b >> 4)
+
+	return color.RGBA{uint8(r), uint8(g), uint8(b), 0xFF}
 }

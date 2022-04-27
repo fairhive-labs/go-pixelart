@@ -71,3 +71,8 @@ func GenerateRandomColor() (h, r, g, b, a uint32, c color.Color) {
 	r, g, b, a = c.RGBA()
 	return
 }
+
+func IsTransparent(c color.Color) bool {
+	_, _, _, a := c.RGBA()
+	return a == 0
+}
