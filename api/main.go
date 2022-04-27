@@ -135,9 +135,19 @@ func pixelize(c *gin.Context) {
 		c.String(http.StatusInternalServerError, "unsupported picture format")
 		return
 	}
+
 	data := base64.StdEncoding.EncodeToString(buf.Bytes())
-	c.HTML(http.StatusCreated, "pixelart_template.html", gin.H{
-		"data": data,
-	})
+	mime := c.DefaultQuery("mime", "html")
+	switch mime {
+	case "json":
+		c.JSON(http.StatusCreated, gin.H{
+			"data":     data,
+			"encoding": "base64",
+		})
+	default:
+		c.HTML(http.StatusCreated, "pixelart_template.html", gin.H{
+			"data": data,
+		})
+	}
 	log.Printf("🎨 Pixel Art produced\n")
 }
