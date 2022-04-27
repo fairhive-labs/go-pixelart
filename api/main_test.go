@@ -17,7 +17,6 @@ func TestGetIndex(t *testing.T) {
 		t.Errorf("incorrect status code, got %d, want %d\n", w.Code, http.StatusOK)
 		t.FailNow()
 	}
-
 	if w.Body.Len() == 0 {
 		t.Error("Body cannot be empty")
 		t.FailNow()

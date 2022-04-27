@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"context"
 	"embed"
 	"encoding/base64"
 	"errors"
@@ -12,7 +13,11 @@ import (
 	"log"
 	"mime/multipart"
 	"net/http"
+	"os"
+	"os/signal"
 	"strings"
+	"syscall"
+	"time"
 
 	"github.com/fairhive-labs/go-pixelart/internal/filter"
 	"github.com/gin-gonic/gin"
@@ -64,7 +69,49 @@ func setupRouter() *gin.Engine {
 
 func main() {
 	r := setupRouter()
-	log.Println(r.Run())
+
+	var addr string
+	if p := os.Getenv("PORT"); p != "" {
+		addr = ":" + p
+	} else {
+		addr = ":8080" // default port
+	}
+
+	srv := &http.Server{
+		Addr:           addr,
+		Handler:        r,
+		ReadTimeout:    10 * time.Second,
+		WriteTimeout:   20 * time.Second,
+		IdleTimeout:    time.Minute,
+		MaxHeaderBytes: 1 << 20, // 1 MB
+	}
+
+	idleConnsClosed := make(chan struct{})
+	go func() {
+		quit := make(chan os.Signal, 1)
+		signal.Notify(quit, syscall.SIGINT, syscall.SIGQUIT, syscall.SIGTERM)
+		s := <-quit
+		log.Printf("🚨 Shutdown signal \"%v\" received\n", s)
+
+		log.Printf("🚦 Here we go for a graceful Shutdown...\n")
+		ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
+		defer cancel()
+		if err := srv.Shutdown(ctx); err != nil {
+			// Error from closing listeners, or context timeout:
+			log.Printf("⚠️ HTTP server Shutdown: %v", err)
+		}
+		close(idleConnsClosed)
+	}()
+
+	log.Printf("✅ Listening and serving HTTP on %s\n", addr)
+	err := srv.ListenAndServe()
+	if !errors.Is(err, http.ErrServerClosed) {
+		log.Fatalf("👹 HTTP server ListenAndServe: %v", err)
+	}
+
+	<-idleConnsClosed
+	log.Printf("😴 Server stopped")
+
 }
 
 func getFilter(f string) (t filter.TransformColor, err error) {
