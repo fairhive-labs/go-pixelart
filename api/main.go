@@ -144,6 +144,7 @@ func pixelize(c *gin.Context) {
 		c.JSON(http.StatusCreated, gin.H{
 			"data":     data,
 			"encoding": "base64",
+			"length":   len(data),
 		})
 	default:
 		c.HTML(http.StatusCreated, "pixelart_template.html", gin.H{
@@ -157,7 +158,7 @@ func cors(c *gin.Context) {
 	c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
 	c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
 	c.Writer.Header().Set("Access-Control-Allow-Headers", "origin, content-type, accept, authorization")
-	c.Writer.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+	c.Writer.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS")
 
 	if c.Request.Method == "OPTIONS" {
 		c.AbortWithStatus(http.StatusNoContent)
