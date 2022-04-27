@@ -46,7 +46,7 @@ var (
 	errUnsupportedFilter = errors.New("Unsupported Filter")
 )
 
-func main() {
+func setupRouter() *gin.Engine {
 	r := gin.Default()
 	t := template.Must(template.New("").Funcs(template.FuncMap{
 		"ToUpper": strings.ToUpper,
@@ -59,6 +59,11 @@ func main() {
 		c.HTML(http.StatusOK, "index.html", filters)
 	})
 	r.POST("/pixelize", pixelize)
+	return r
+}
+
+func main() {
+	r := setupRouter()
 	log.Println(r.Run())
 }
 
