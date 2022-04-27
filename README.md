@@ -13,4 +13,4 @@ transform picture into pixel art
 `docker build -t fairhive-labs/pixelart . && docker push fairhive-labs/pixelart`
 
 #### Run
-`docker run -it --rm fairhive-labs/pixelart`
+`docker run -it --rm -p 8080:8080 fairhive-labs/pixelart`
