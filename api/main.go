@@ -20,7 +20,6 @@ import (
 
 type PixelizeForm struct {
 	Slices int                   `form:"slices" binding:"required,min=1,max=1000"`
-	Width  int                   `form:"width"`
 	Edge   string                `form:"edge" binding:"required,oneof=short long"`
 	Filter string                `form:"filter" binding:"required,oneof=cga2 cga4 cga16 ega vga identity dark-contrast dark-gray gray invert light-gray xray"`
 	File   *multipart.FileHeader `form:"file" binding:"required"`
@@ -138,8 +137,7 @@ func pixelize(c *gin.Context) {
 	}
 	data := base64.StdEncoding.EncodeToString(buf.Bytes())
 	c.HTML(http.StatusCreated, "pixelart_template.html", gin.H{
-		"width": form.Width,
-		"data":  data,
+		"data": data,
 	})
 	log.Printf("🎨 Pixel Art produced\n")
 }
