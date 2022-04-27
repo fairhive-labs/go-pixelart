@@ -30,14 +30,17 @@
     <div class="container">
         <div class="card text-white bg-dark mb-3">
             <div class="card-header">
-                <h5 class="card-title">pixelize your preferred pictures</h5>
+                <h5 class="card-title">👾 pixelize your preferred pictures 👾</h5>
             </div>
             <div class="card-body">
                 <form action="/pixelize" method="POST" enctype="multipart/form-data">
                     <div class="mb-3">
-                        <label for="slices" class="form-label">Slices (how many pixel blocks):</label>
-                        <input type="number" name="slices" id="slices" min="1" max="1000" step="1" value="100"
-                            class="form-control" aria-describedby="slicesHelp" required>
+                        <label for="slices" class="form-label">Slices:</label>
+                        <div class="input-group">
+                            <input type="number" name="slices" id="slices" min="1" max="1000" step="1" value="100"
+                                class="form-control" aria-describedby="slicesHelp" required>
+                            <span class="input-group-text">🔲</span>
+                        </div>
                         <div id="slicesHelp" class="form-text">Enter a value between 1 and 1000, cannot be larger than
                             the original picture width/height...</div>
                     </div>
