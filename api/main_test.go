@@ -1,9 +1,14 @@
 package main
 
 import (
+	"bytes"
 	"errors"
+	"io"
+	"mime/multipart"
 	"net/http"
 	"net/http/httptest"
+	"os"
+	"strings"
 	"testing"
 )
 
@@ -41,6 +46,75 @@ func TestGetFilter(t *testing.T) {
 	}
 	if _, err := getFilter("fooFilter"); !errors.Is(err, errUnsupportedFilter) {
 		t.Errorf("incorrect error getting filter fooFilter, got nil, want %v\n", errUnsupportedFilter)
+		t.FailNow()
+	}
+}
+
+func TestPixelize(t *testing.T) {
+	r := setupRouter()
+
+	buf := &bytes.Buffer{}
+	writer := multipart.NewWriter(buf)
+
+	fw, err := writer.CreateFormField("edge")
+	if err != nil {
+		t.Errorf("error creating form field %q: %v", "edge", err)
+		t.FailNow()
+	}
+	_, err = io.Copy(fw, strings.NewReader("short"))
+	if err != nil {
+		t.Errorf("error copying value %q in io.Writer: %v", "short", err)
+		t.FailNow()
+	}
+
+	fw, err = writer.CreateFormField("slices")
+	if err != nil {
+		t.Errorf("error creating form field %q: %v", "slices", err)
+		t.FailNow()
+	}
+	_, err = io.Copy(fw, strings.NewReader("100"))
+	if err != nil {
+		t.Errorf("error copying value %q in io.Writer: %v", "100", err)
+		t.FailNow()
+	}
+
+	fw, err = writer.CreateFormField("filter")
+	if err != nil {
+		t.Errorf("error creating form field %q: %v", "filter", err)
+		t.FailNow()
+	}
+	_, err = io.Copy(fw, strings.NewReader("cga4"))
+	if err != nil {
+		t.Errorf("error copying value %q in io.Writer: %v", "cga4", err)
+		t.FailNow()
+	}
+
+	path := "img_test.png"
+	fw, err = writer.CreateFormFile("file", path)
+	if err != nil {
+	}
+	file, err := os.Open(path)
+	if err != nil {
+		t.Errorf("cannot open file %q: %v\n", path, err)
+		t.FailNow()
+	}
+	_, err = io.Copy(fw, file)
+	if err != nil {
+		t.Errorf("cannot copy file %q: %v\n", path, err)
+		t.FailNow()
+	}
+
+	file.Close()
+	writer.Close()
+
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("POST", "/pixelize?mime=json", bytes.NewReader(buf.Bytes()))
+	req.Header.Set("Content-Type", writer.FormDataContentType())
+	r.ServeHTTP(w, req)
+
+	if w.Code != http.StatusCreated {
+		t.Errorf(w.Body.String())
+		t.Errorf("incorrect status code, got %d, want %d\n", w.Code, http.StatusOK)
 		t.FailNow()
 	}
 }
