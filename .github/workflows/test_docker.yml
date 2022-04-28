@@ -1,12 +1,12 @@
 on: [push]
 
-name: Test & Heroku Deployment
+name: Test & Docker Build
 jobs:
   test:
     strategy:
       matrix:
         go-version: [1.18.x]
-        os: [ubuntu-latest, macos-latest, windows-latest]
+        os: [ubuntu-latest]
     runs-on: ${{ matrix.os }}
     steps:
       - name: setup
