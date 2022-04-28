@@ -1,4 +1,6 @@
 # go-pixelart
+[![Test & Heroku Deployment](https://github.com/fairhive-labs/go-pixelart/actions/workflows/test_heroku_deploy.yml/badge.svg)](https://github.com/fairhive-labs/go-pixelart/actions/workflows/test_heroku_deploy.yml)
+
 transform picture into pixel art
 
 ## HTML
