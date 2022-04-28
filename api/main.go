@@ -60,6 +60,9 @@ func setupRouter() *gin.Engine {
 	r.MaxMultipartMemory = 16 << 20 // 16 MiB
 
 	r.Use(cors)
+	r.GET("/health", func(c *gin.Context) {
+		c.String(http.StatusOK, "ok")
+	})
 	r.GET("/", func(c *gin.Context) {
 		c.HTML(http.StatusOK, "index.html", filters)
 	})
