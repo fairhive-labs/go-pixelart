@@ -45,3 +45,12 @@ jobs:
           checkstring: "ok"
           delay: 5
           rollbackonhealthcheckfailed: true
+      - name: Slack Notification
+        uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_CHANNEL: _github
+          SLACK_COLOR: ${{ job.status }}
+          SLACK_MESSAGE: "https://fairhive-pixelart.herokuapp.com/"
+          SLACK_TITLE: Heroku Deployment
+          SLACK_USERNAME: _whyvrafvr
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
