@@ -2,7 +2,7 @@
 FROM golang:1.18 as builder
 WORKDIR /go/src/pixelart
 COPY . .
-RUN go get -v -d ./...
+RUN go mod tidy
 RUN CGO_ENABLED=0 go build -o bin/api -v api/main.go
 
 FROM scratch
