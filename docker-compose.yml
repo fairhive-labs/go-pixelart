@@ -1,0 +1,8 @@
+version: "3"
+services:
+  pixelart:
+    build: .
+    image: fairhivelabs/pixelart
+    container_name: pixelart
+    ports:
+      - 8080:8080
