@@ -57,3 +57,12 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=registry,ref=fairhivelabs/pixelart:buildcache
           cache-to: type=registry,ref=fairhivelabs/pixelart:buildcache,mode=max
+      - name: Slack Notification
+        uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_CHANNEL: _github
+          SLACK_COLOR: ${{ job.status }}
+          SLACK_MESSAGE: "https://hub.docker.com/repository/docker/fairhivelabs/pixelart"
+          SLACK_TITLE: Docker Image Build & Push
+          SLACK_USERNAME: _whyvrafvr
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
