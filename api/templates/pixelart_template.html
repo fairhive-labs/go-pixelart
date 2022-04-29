@@ -49,6 +49,11 @@
         let img = document.querySelector("#img");
         let { width, height } = img;
         const scale = getScale(width, height);
+        const timing = {
+            duration: 1000,
+            iterations: 1,
+            fill: 'forwards',
+        }
 
         function getScale(w, h) {
             return (w <= h) ? w / h : h / w;
@@ -56,15 +61,14 @@
 
         function rotateImg() {
             rotation += 90;
-            if (rotation === 360) {
-                rotation = 0;
-                img.removeAttribute('style');
+            if (rotation % 180 === 0) {
+                img.animate([
+                    { transform: `rotate(${rotation}deg)` }
+                ], timing);
             } else {
-                if (rotation === 180) {
-                    img.style.transform = `rotate(${rotation}deg)`;
-                } else {
-                    img.style.transform = `rotate(${rotation}deg) scale(${scale})`;
-                }
+                img.animate([
+                    { transform: `rotate(${rotation}deg) scale(${scale})` }
+                ], timing);
             }
         }
     </script>
