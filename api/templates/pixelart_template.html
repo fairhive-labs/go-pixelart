@@ -41,6 +41,14 @@
     </div>
     <script>
         let rotation = 0;
+        let { width, height } = document.querySelector("#img");
+        const scale = getScale(width, height);
+        
+        function getScale(w, h) {
+            console.log(w,h);
+            return (w <= h) ? w / h : h / w;
+        }
+
         function rotateImg() {
             rotation += 90;
             if (rotation === 360) {
@@ -50,9 +58,8 @@
                 if (rotation === 180) {
                     document.querySelector("#img").style.transform = `rotate(${rotation}deg)`;
                 } else {
-                    document.querySelector("#img").style.transform = `rotate(${rotation}deg) scale(.7)`;
+                    document.querySelector("#img").style.transform = `rotate(${rotation}deg) scale(${scale})`;
                 }
-
             }
         }
     </script>
