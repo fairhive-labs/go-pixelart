@@ -47,7 +47,12 @@
                 rotation = 0;
                 document.querySelector("#img").removeAttribute('style');
             } else {
-                document.querySelector("#img").style.transform = `rotate(${rotation}deg)`;
+                if (rotation === 180) {
+                    document.querySelector("#img").style.transform = `rotate(${rotation}deg)`;
+                } else {
+                    document.querySelector("#img").style.transform = `rotate(${rotation}deg) scale(.7)`;
+                }
+
             }
         }
     </script>
