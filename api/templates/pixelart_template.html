@@ -26,10 +26,7 @@
         <div class="card text-white bg-dark mb-3">
             <div class="card-header">
                 <div class="d-grid gap-2">
-                    <button class="btn btn-secondary" onClick="rotateImg()">
-                        <span>Rotate Image&nbsp;&nbsp;</span>
-                        <i class="bi bi-arrow-clockwise" style="font-size: 1.2rem; vertical-align: middle;"></i>
-                    </button>
+                    <button class="btn btn-secondary" onClick="rotateImg()">Rotate Image (&#10227;)</button>
                 </div>
             </div>
             <div class="card-body">
@@ -45,21 +42,19 @@
         </div>
     </div>
     <script>
-        let rotation = 0;
-        let img = document.querySelector("#img");
-        let { width, height } = img;
-        const scale = getScale(width, height);
         const timing = {
             duration: 1000,
             iterations: 1,
             fill: 'forwards',
         }
 
-        function getScale(w, h) {
-            return (w <= h) ? w / h : h / w;
-        }
+        let rotation = 0;
 
         function rotateImg() {
+            let img = document.querySelector("#img");
+            let { width, height } = img;
+            let scale = (width <= height) ? width / height : height / width;
+           
             rotation += 90;
             if (rotation % 180 === 0) {
                 img.animate([
