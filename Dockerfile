@@ -3,10 +3,11 @@ FROM golang:1.18 as builder
 WORKDIR /go/src/pixelart
 COPY . .
 RUN go mod tidy
-RUN CGO_ENABLED=0 go build -o bin/pixelart -v api/main.go
+RUN CGO_ENABLED=0 go build -o bin/api -v api/main.go
 
-# do not use scratch because heroku requires /bin/sh as default entrypoint for config vars
-FROM scratch
-COPY --from=builder /go/src/pixelart/bin/pixelart /app/bin/
+# do not use "scratch" because heroku requires "/bin/sh" as default entrypoint for config vars
+# btw, if you don't need config vars you can replace CMD by ENTRYPOINT, it works ;)
+FROM alpine
+COPY --from=builder /go/src/pixelart/bin/api /app/bin/
 EXPOSE 8080
-ENTRYPOINT ["/app/bin/pixelart"]
+CMD ["/app/bin/api"]
