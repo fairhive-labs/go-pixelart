@@ -18,20 +18,18 @@
             align-items: center;
             margin-top: 5%;
         }
-
-        img {
-            image-orientation: from-image;
-            max-width: 100% !important;
-            max-height: 100% !important;
-        }
     </style>
 </head>
 
 <body>
     <div class="container">
         <div class="card text-white bg-dark mb-3">
+            <div class="card-header">
+                <button onClick="rotateImg()">Rotate Image</button>
+            </div>
             <div class="card-body">
-                <img src="data:image/png;base64,{{.data}}" alt="fairhive - pixel art image" />
+                <img id="img" class="img-fluid" src="data:image/png;base64,{{.data}}"
+                    alt="fairhive - pixel art image" />
             </div>
             <div class="card-footer">
                 <div class="d-grid gap-2">
@@ -41,6 +39,18 @@
             </a>
         </div>
     </div>
+    <script>
+        let rotation = 0;
+        function rotateImg() {
+            rotation += 90;
+            if (rotation === 360) {
+                rotation = 0;
+                document.querySelector("#img").removeAttribute('style');
+            } else {
+                document.querySelector("#img").style.transform = `rotate(${rotation}deg)`;
+            }
+        }
+    </script>
 </body>
 
 </html>
