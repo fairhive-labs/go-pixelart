@@ -207,4 +207,14 @@ func TestGetFavicon(t *testing.T) {
 		t.Error("Body cannot be empty")
 		t.FailNow()
 	}
+
+	if headers.Get("Cache-Control") != "public, max-age=31536000" {
+		t.Errorf("incorrect Cache-Control, got %q, want%q\n", headers.Get("Cache-Control"), "public, max-age=31536000")
+		t.FailNow()
+	}
+	if headers.Get("ETag") != "d6ab255e0eb3f7ce86dcb0ba12992a67" {
+		t.Errorf("incorrect ETag, got %q, want %q\n", headers.Get("ETag"), "d6ab255e0eb3f7ce86dcb0ba12992a67")
+		t.FailNow()
+	}
+
 }

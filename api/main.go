@@ -3,9 +3,11 @@ package main
 import (
 	"bytes"
 	"context"
+	"crypto/md5"
 	"embed"
 	"encoding/base64"
 	"errors"
+	"fmt"
 	"html/template"
 	"image"
 	"image/jpeg"
@@ -226,9 +228,18 @@ func cors(c *gin.Context) {
 
 func getFavicon(c *gin.Context) {
 	file, err := fs.ReadFile("assets/favicon.ico")
+	etag := fmt.Sprintf("%x", md5.Sum(file))
 	if err != nil {
 		c.String(http.StatusInternalServerError, err.Error())
 		return
+	}
+	c.Header("Cache-Control", "public, max-age=31536000")
+	c.Header("ETag", etag)
+	if match := c.GetHeader("If-None-Match"); match != "" {
+		if strings.Contains(match, etag) {
+			c.AbortWithStatus(http.StatusNotModified)
+			return
+		}
 	}
 	c.Data(
 		http.StatusOK,
