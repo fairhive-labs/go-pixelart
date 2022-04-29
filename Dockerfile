@@ -5,7 +5,7 @@ COPY . .
 RUN go mod tidy
 RUN CGO_ENABLED=0 go build -o bin/pixelart -v api/main.go
 
-FROM scratch
+FROM alpine
 COPY --from=builder /go/src/pixelart/bin/pixelart /app/bin/
 EXPOSE 8080
 CMD ["/app/bin/pixelart"]
