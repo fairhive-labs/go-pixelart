@@ -30,8 +30,8 @@ type PixelizeForm struct {
 	File   *multipart.FileHeader `form:"file" binding:"required"`
 }
 
-//go:embed templates
-var tfs embed.FS
+//go:embed assets templates
+var fs embed.FS
 
 var (
 	filters map[string]filter.TransformColor = map[string]filter.TransformColor{
@@ -55,7 +55,7 @@ func setupRouter() *gin.Engine {
 	r := gin.Default()
 	t := template.Must(template.New("").Funcs(template.FuncMap{
 		"ToUpper": strings.ToUpper,
-	}).ParseFS(tfs, "templates/*"))
+	}).ParseFS(fs, "templates/*"))
 	r.SetHTMLTemplate(t)
 	r.MaxMultipartMemory = 16 << 20 // 16 MiB
 
@@ -63,6 +63,7 @@ func setupRouter() *gin.Engine {
 	r.GET("/health", func(c *gin.Context) {
 		c.String(http.StatusOK, "ok")
 	})
+	r.GET("favicon.ico", getFavicon)
 	r.GET("/", func(c *gin.Context) {
 		c.HTML(http.StatusOK, "index.html", filters)
 	})
@@ -221,4 +222,17 @@ func cors(c *gin.Context) {
 		return
 	}
 	c.Next()
+}
+
+func getFavicon(c *gin.Context) {
+	file, err := fs.ReadFile("assets/favicon.ico")
+	if err != nil {
+		c.String(http.StatusInternalServerError, err.Error())
+		return
+	}
+	c.Data(
+		http.StatusOK,
+		"image/x-icon",
+		file,
+	)
 }
