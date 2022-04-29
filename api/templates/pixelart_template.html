@@ -25,7 +25,12 @@
     <div class="container">
         <div class="card text-white bg-dark mb-3">
             <div class="card-header">
-                <button onClick="rotateImg()">Rotate Image</button>
+                <div class="d-grid gap-2">
+                    <button class="btn btn-secondary" onClick="rotateImg()">
+                        <span>Rotate Image&nbsp;&nbsp;</span>
+                        <i class="bi bi-arrow-clockwise" style="font-size: 1.2rem; vertical-align: middle;"></i>
+                    </button>
+                </div>
             </div>
             <div class="card-body">
                 <img id="img" class="img-fluid" src="data:image/png;base64,{{.data}}"
@@ -43,9 +48,8 @@
         let rotation = 0;
         let { width, height } = document.querySelector("#img");
         const scale = getScale(width, height);
-        
+
         function getScale(w, h) {
-            console.log(w,h);
             return (w <= h) ? w / h : h / w;
         }
 
