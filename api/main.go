@@ -65,7 +65,7 @@ func setupRouter() *gin.Engine {
 	r.GET("/health", func(c *gin.Context) {
 		c.String(http.StatusOK, "ok")
 	})
-	r.GET("favicon.ico", getFavicon)
+	r.GET("/favicon.ico", getFavicon)
 	r.GET("/", func(c *gin.Context) {
 		c.HTML(http.StatusOK, "index.html", filters)
 	})
@@ -233,14 +233,14 @@ func getFavicon(c *gin.Context) {
 		c.String(http.StatusInternalServerError, err.Error())
 		return
 	}
-	c.Header("Cache-Control", "public, max-age=31536000")
-	c.Header("ETag", etag)
 	if match := c.GetHeader("If-None-Match"); match != "" {
 		if strings.Contains(match, etag) {
 			c.AbortWithStatus(http.StatusNotModified)
 			return
 		}
 	}
+	c.Header("Cache-Control", "public, max-age=31536000")
+	c.Header("ETag", etag)
 	c.Data(
 		http.StatusOK,
 		"image/x-icon",

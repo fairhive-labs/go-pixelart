@@ -217,4 +217,44 @@ func TestGetFavicon(t *testing.T) {
 		t.FailNow()
 	}
 
+	w = httptest.NewRecorder()
+	req, _ = http.NewRequest("GET", "/favicon.ico", nil)
+	req.Header.Add("If-None-Match", "1234567890")
+	r.ServeHTTP(w, req)
+
+	if w.Code != http.StatusOK {
+		t.Errorf("incorrect status code, got %d, want %d\n", w.Code, http.StatusOK)
+		t.FailNow()
+	}
+
+	headers = w.Result().Header
+	if headers.Get("Cache-Control") != "public, max-age=31536000" {
+		t.Errorf("incorrect Cache-Control, got %q, want %q\n", headers.Get("Cache-Control"), "public, max-age=31536000")
+		t.FailNow()
+	}
+	if headers.Get("ETag") != "d6ab255e0eb3f7ce86dcb0ba12992a67" {
+		t.Errorf("incorrect ETag, got %q, want %q\n", headers.Get("ETag"), "d6ab255e0eb3f7ce86dcb0ba12992a67")
+		t.FailNow()
+	}
+
+	w = httptest.NewRecorder()
+	req, _ = http.NewRequest("GET", "/favicon.ico", nil)
+	req.Header.Add("If-None-Match", "d6ab255e0eb3f7ce86dcb0ba12992a67")
+	r.ServeHTTP(w, req)
+
+	if w.Code != http.StatusNotModified {
+		t.Errorf("incorrect status code, got %d, want %d\n", w.Code, http.StatusNotModified)
+		t.FailNow()
+	}
+
+	headers = w.Result().Header
+	if headers.Get("Cache-Control") != "" {
+		t.Errorf("incorrect Cache-Control, got %q, want %q\n", headers.Get("Cache-Control"), "")
+		t.FailNow()
+	}
+	if headers.Get("ETag") != "" {
+		t.Errorf("incorrect ETag, got %q, want %q\n", headers.Get("ETag"), "")
+		t.FailNow()
+	}
+
 }
