@@ -5,7 +5,8 @@ COPY . .
 RUN go mod tidy
 RUN CGO_ENABLED=0 go build -o bin/pixelart -v api/main.go
 
-FROM alpine
+# do not use scratch because heroku requires /bin/sh as default entrypoint for config vars
+FROM scratch
 COPY --from=builder /go/src/pixelart/bin/pixelart /app/bin/
 EXPOSE 8080
-CMD ["/app/bin/pixelart"]
+ENTRYPOINT ["/app/bin/pixelart"]
