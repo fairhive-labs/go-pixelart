@@ -37,9 +37,9 @@ jobs:
           tags: |
             type=schedule
             type=raw,value=latest,enable=${{ endsWith(GitHub.ref, 'main') }}
-            type=raw,value={{branch}}
-            type=semver,pattern={{version}}
-            type=sha,prefix={{branch}}-,format=long
+            type=raw,event=branch,value={{branch}}
+            type=semver,pattern={{raw}}
+            type=sha,event=branch,prefix={{branch}}-,format=long
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v1
       - name: Set up Docker Buildx
