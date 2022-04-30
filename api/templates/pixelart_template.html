@@ -58,10 +58,12 @@
 
             if (rotation % 180 === 0) {
                 img.animate([
+                    { transform: `rotate(${rotation - 90}deg) scale(${scale})` },
                     { transform: `rotate(${rotation}deg)` }
                 ], timing);
             } else {
                 img.animate([
+                    { transform: `rotate(${rotation - 90}deg)` },
                     { transform: `rotate(${rotation}deg) scale(${scale})` }
                 ], timing);
             }
