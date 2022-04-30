@@ -1,5 +1,6 @@
 # go-pixelart
 [![Test & Heroku Deployment](https://github.com/fairhive-labs/go-pixelart/actions/workflows/test_heroku_deploy.yml/badge.svg)](https://github.com/fairhive-labs/go-pixelart/actions/workflows/test_heroku_deploy.yml)
+[![Test & Docker Build/Push](https://github.com/fairhive-labs/go-pixelart/actions/workflows/test_docker_build_push.yml/badge.svg)](https://github.com/fairhive-labs/go-pixelart/actions/workflows/test_docker_build_push.yml)
 
 transform picture into pixel art
 
