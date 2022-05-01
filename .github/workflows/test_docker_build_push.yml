@@ -63,6 +63,6 @@ jobs:
           SLACK_CHANNEL: _github
           SLACK_COLOR: ${{ job.status }}
           SLACK_MESSAGE: "https://hub.docker.com/repository/docker/fairhivelabs/pixelart"
-          SLACK_TITLE: Docker Image Build & Push
+          SLACK_TITLE: Docker Image Build & Push - pixelart
           SLACK_USERNAME: _whyvrafvr
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
