@@ -16,7 +16,7 @@ jobs:
       - name: checkout
         uses: actions/checkout@v3
       - name: caching
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: |
             ~/go/pkg/mod
@@ -31,7 +31,7 @@ jobs:
     steps:
       - name: Docker meta
         id: meta
-        uses: docker/metadata-action@v3
+        uses: docker/metadata-action@v4
         with:
           images: fairhivelabs/pixelart
           tags: |
