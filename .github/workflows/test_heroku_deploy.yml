@@ -1,8 +1,7 @@
-# on:
-#   push:
-#     branches:
-#       - main
-on: [push]
+on:
+  push:
+    branches:
+      - main
 name: Test & Heroku Deployment
 jobs:
   test:
