@@ -50,6 +50,7 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
       - name: Build and push
+        if: always()
         uses: docker/build-push-action@v4
         with:
           push: true
@@ -58,6 +59,7 @@ jobs:
           cache-from: type=registry,ref=fairhivelabs/pixelart:buildcache
           cache-to: type=registry,ref=fairhivelabs/pixelart:buildcache,mode=max
       - name: Slack Notification
+        if: always()
         uses: rtCamp/action-slack-notify@v2
         env:
           SLACK_CHANNEL: _github
