@@ -19,7 +19,7 @@ jobs:
       - name: checkout
         uses: actions/checkout@v3
       - name: caching
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: |
             ~/go/pkg/mod
@@ -35,8 +35,8 @@ jobs:
     needs: test
     # if: github.ref == 'refs/heads/master' && github.event_name != 'pull_request'
     steps:
-      - uses: actions/checkout@v2
-      - uses: akhileshns/heroku-deploy@v3.12.12
+      - uses: actions/checkout@v3
+      - uses: akhileshns/heroku-deploy@v3.12.13
         with:
           heroku_api_key: ${{secrets.HEROKU_API_KEY}}
           heroku_app_name: "fairhive-pixelart"
