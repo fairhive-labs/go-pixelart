@@ -1,4 +1,4 @@
-on: [push]
+on: [push, pull_request]
 
 name: Test & Docker Build/Push
 jobs:
@@ -6,7 +6,7 @@ jobs:
     strategy:
       matrix:
         go-version: [1.19.x]
-        os: [ubuntu-latest, macos-latest, windows-latest]
+        os: [ubuntu-latest]
     runs-on: ${{ matrix.os }}
     steps:
       - name: setup
