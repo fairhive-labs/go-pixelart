@@ -2,7 +2,7 @@ on: [push, pull_request]
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}
+  IMAGE_NAME: ${{ github.repository_owner }}/pixelart
 
 name: Test & Docker Build/Push
 jobs:
@@ -19,15 +19,15 @@ jobs:
         uses: actions/setup-go@v4
         with:
           go-version: ${{ matrix.go-version }}
-      - name: caching
-        uses: actions/cache@v3
-        with:
-          path: |
-            ~/go/pkg/mod
-            ~/.cache/go-build
-          key: ${{ runner.os }}-go-${{ matrix.go-version }}-${{ hashFiles('**/go.sum') }}
-          restore-keys: |
-            ${{ runner.os }}-go-${{ matrix.go-version }}-
+      # - name: caching
+      #   uses: actions/cache@v3
+      #   with:
+      #     path: |
+      #       ~/go/pkg/mod
+      #       ~/.cache/go-build
+      #     key: ${{ runner.os }}-go-${{ matrix.go-version }}-${{ hashFiles('**/go.sum') }}
+      #     restore-keys: |
+      #       ${{ runner.os }}-go-${{ matrix.go-version }}-
       - run: go test -v ./...
   docker:
     needs: test
