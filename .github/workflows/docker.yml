@@ -8,7 +8,7 @@ env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository_owner }}/${{ vars.PROJECT_NAME }}
 
-name: Test & Docker Build/Push
+name: Test & Docker Build+Push
 jobs:
   check_skip_flags:
     runs-on: ubuntu-latest
@@ -67,3 +67,4 @@ jobs:
           SLACK_TITLE: Docker Image Build & Push - ${{ vars.PROJECT_NAME }}
           SLACK_USERNAME: _whyvrafvr
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+          SLACK_FOOTER: SHA:${{ github.sha }}
