@@ -1,0 +1,27 @@
+name: Unit Test
+on:
+  workflow_call:
+    inputs:
+      go-version:
+        required: false
+        type: string
+        default: '[1.20.x]'
+      os:
+        required: false
+        type: string
+        default: '[ubuntu-latest]'
+jobs:
+  unit-test:
+    strategy:
+      matrix:
+        go-version: ${{ fromJson(inputs.go-version) }}
+        os: ${{ fromJson(inputs.os) }}
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: checkout
+        uses: actions/checkout@v3
+      - name: setup
+        uses: actions/setup-go@v4
+        with:
+          go-version: ${{ matrix.go-version }}
+      - run: go test -v ./...
