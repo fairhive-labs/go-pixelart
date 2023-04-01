@@ -19,6 +19,8 @@ jobs:
         id: get_head_commit_message
         run: echo "HEAD_COMMIT_MSG=$(git show -s --format=%s)" >> $GITHUB_OUTPUT
   test:
+    needs: [check_skip_flags]
+    if: "!contains(needs.check_skip_flags.outputs.head-commit-message, '[skip-test]')"
     strategy:
       matrix:
         go-version: [1.20.x]
@@ -33,7 +35,7 @@ jobs:
           go-version: ${{ matrix.go-version }}
       - run: go test -v ./...
   docker:
-    needs: [test,check_skip_flags]
+    needs: [test]
     if: "!contains(needs.check_skip_flags.outputs.head-commit-message, '[skip-docker]')"
     runs-on: ubuntu-latest
     steps:
