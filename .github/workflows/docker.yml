@@ -2,8 +2,7 @@ on: [push, pull_request]
 
 env:
   REGISTRY: ghcr.io
-  NAME: pixelart
-  IMAGE_NAME: ${{ github.repository_owner }}/$NAME
+  IMAGE_NAME: ${{ github.repository_owner }}/${{ vars.NAME }}
 
 name: Test & Docker Build/Push
 jobs:
@@ -60,7 +59,7 @@ jobs:
         env:
           SLACK_CHANNEL: _github
           SLACK_COLOR: ${{ job.status }}
-          SLACK_MESSAGE: ${{ github.server_url }}/${{ github.repository	 }}/pkgs/container/${{ env.NAME }}
-          SLACK_TITLE: Docker Image Build & Push - ${{ env.NAME }}
+          SLACK_MESSAGE: ${{ github.server_url }}/${{ github.repository	 }}/pkgs/container/${{ vars.NAME }}
+          SLACK_TITLE: Docker Image Build & Push - ${{ vars.NAME }}
           SLACK_USERNAME: _whyvrafvr
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
