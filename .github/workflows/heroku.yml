@@ -31,7 +31,7 @@ jobs:
           SLACK_CHANNEL: _github
           SLACK_COLOR: ${{ job.status }}
           SLACK_MESSAGE: "https://fairhive-pixelart.herokuapp.com/"
-          SLACK_TITLE: Heroku Deployment - pixelart
+          SLACK_TITLE: Heroku Deployment - ${{ vars.PROJECT_NAME }}
           SLACK_USERNAME: _whyvrafvr
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
           SLACK_FOOTER: sha-${{ github.sha }}
