@@ -38,3 +38,4 @@ jobs:
           SLACK_TITLE: Heroku Deployment - pixelart
           SLACK_USERNAME: _whyvrafvr
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+          SLACK_FOOTER: sha-${{ github.sha }}

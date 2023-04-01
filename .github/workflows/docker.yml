@@ -67,4 +67,4 @@ jobs:
           SLACK_TITLE: Docker Image Build & Push - ${{ vars.PROJECT_NAME }}
           SLACK_USERNAME: _whyvrafvr
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
-          SLACK_FOOTER: SHA:${{ github.sha }}
+          SLACK_FOOTER: sha-${{ github.sha }}
