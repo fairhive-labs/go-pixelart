@@ -34,7 +34,7 @@ jobs:
       - run: go test -v ./...
   docker:
     needs: [test,check_skip_flags]
-    if: "!contains(github.event.head_commit.message, '[skip-docker]')"
+    if: "!contains(needs.check_skip_flags.outputs.head-commit-message, '[skip-docker]')"
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
