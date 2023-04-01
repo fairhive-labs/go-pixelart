@@ -6,6 +6,18 @@ env:
 
 name: Test & Docker Build/Push
 jobs:
+  check_skip_flags:
+    runs-on: ubuntu-latest
+    outputs:
+      head-commit-message: ${{ steps.get_head_commit_message.outputs.HEAD_COMMIT_MSG }}
+    steps:
+      - name: Get repo
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+      - name: Print head git commit message
+        id: get_head_commit_message
+        run: echo "HEAD_COMMIT_MSG=$(git show -s --format=%s)" >> $GITHUB_OUTPUT
   test:
     strategy:
       matrix:
@@ -21,7 +33,8 @@ jobs:
           go-version: ${{ matrix.go-version }}
       - run: go test -v ./...
   docker:
-    needs: test
+    needs: [test,check_skip_flags]
+    if: "!contains(github.event.head_commit.message, '[skip-docker]')"
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
