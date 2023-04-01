@@ -3,7 +3,7 @@ on: [push, pull_request]
 env:
   REGISTRY: ghcr.io
   NAME: pixelart
-  IMAGE_NAME: ${{ github.repository_owner }}/${{ env.NAME }}
+  IMAGE_NAME: ${{ github.repository_owner }}/$NAME
 
 name: Test & Docker Build/Push
 jobs:
