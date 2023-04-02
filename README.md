@@ -1,6 +1,6 @@
 # go-pixelart
-[![Test & Heroku Deployment](https://github.com/fairhive-labs/go-pixelart/actions/workflows/test_heroku_deploy.yml/badge.svg)](https://github.com/fairhive-labs/go-pixelart/actions/workflows/test_heroku_deploy.yml)
-[![Test & Docker Build/Push](https://github.com/fairhive-labs/go-pixelart/actions/workflows/test_docker_build_push.yml/badge.svg)](https://github.com/fairhive-labs/go-pixelart/actions/workflows/test_docker_build_push.yml)
+[![Test & Heroku Deployment](https://github.com/fairhive-labs/go-pixelart/actions/workflows/heroku.yml/badge.svg)](https://github.com/fairhive-labs/go-pixelart/actions/workflows/heroku.yml)
+[![Test & Docker Build+Push](https://github.com/fairhive-labs/go-pixelart/actions/workflows/docker.yml/badge.svg)](https://github.com/fairhive-labs/go-pixelart/actions/workflows/docker.yml)
 
 ### Transform picture into pixel art
 
@@ -14,8 +14,14 @@
 
 ## Docker 
 
-### Build
-`docker build -t fairhivelabs/pixelart . && docker push fairhivelabs/pixelart`
+### Local Build & Run
 
-#### Run
-`docker run -it --rm -p 8080:8080 fairhivelabs/pixelart`
+`docker build -t fairhivelabs/pixelart . && docker run -it --rm -p 8080:8080 fairhivelabs/pixelart`
+
+### Run pulling GitHub Container Registry image (ghcr.io)
+
+`docker run -it --rm -p 8080:8080 ghcr.io/fairhive-labs/pixelart`
+
+### Open pixelart application :rocket:
+
+> visit `http://localhost:8080` in your web browser and pixelize every stuff ;)
