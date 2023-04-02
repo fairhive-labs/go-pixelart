@@ -24,4 +24,4 @@
 
 ### Open pixelart application :rocket:
 
-> visit `http://localhost:8080` in your web browser and pixelize every stuff ;)
+visit `http://localhost:8080` in your web browser and pixelize every stuff ;)
