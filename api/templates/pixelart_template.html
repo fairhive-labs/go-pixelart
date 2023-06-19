@@ -23,15 +23,15 @@
 
 <body>
     <div class="container">
-        <div class="card text-white bg-dark mb-3">
+        <div class="card text-white bg-dark mb-3 text-center">
             <div class="card-header">
                 <div class="d-grid gap-2">
-                    <button class="btn btn-secondary" onClick="rotateImg()">Rotate Image (clockwise)</button>
+                    <button class="btn btn-secondary" onclick="rotateImg()">Rotate Image (clockwise)</button>
                 </div>
             </div>
             <div class="card-body">
-                <img id="img" class="img-fluid" src="data:image/png;base64,{{.data}}"
-                    alt="fairhive - pixel art image" />
+                <img id="img" class="img-fluid" src="data:image/png;base64,{{.data}}" alt="fairhive - pixel art image"
+                    onclick="tiny2x2img()" />
             </div>
             <div class="card-footer">
                 <div class="d-grid gap-2">
@@ -67,6 +67,16 @@
                     { transform: `rotate(${rotation}deg) scale(${scale})` }
                 ], timing);
             }
+        }
+
+        function tiny2x2img() {
+            let img = document.querySelector("#img");
+            var canvas = document.createElement('canvas');
+            ctx = canvas.getContext('2d');
+            canvas.width = 4;
+            canvas.height = 4;
+            ctx.drawImage(img, 0, 0, 4, 4);
+            console.log(canvas.toDataURL());
         }
     </script>
 </body>
