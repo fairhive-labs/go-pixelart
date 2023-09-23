@@ -50,7 +50,7 @@ var (
 		"light-gray":    filter.LightGrayColor,
 		"xray":          filter.XRayColor,
 	}
-	errUnsupportedFilter = errors.New("Unsupported Filter")
+	errUnsupportedFilter = errors.New("unsupported filter")
 )
 
 func setupRouter() *gin.Engine {

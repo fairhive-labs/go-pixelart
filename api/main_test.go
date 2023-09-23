@@ -93,6 +93,8 @@ func TestPixelize(t *testing.T) {
 	path := "img_test.png"
 	fw, err = writer.CreateFormFile("file", path)
 	if err != nil {
+		t.Errorf("error creating file %q: %v\n", path, err)
+		t.FailNow()
 	}
 	file, err := os.Open(path)
 	if err != nil {
