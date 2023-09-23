@@ -182,6 +182,7 @@ func TestHealth(t *testing.T) {
 }
 
 func TestGetFavicon(t *testing.T) {
+	etg := "042fcec4629b02c73aa21a3d26ca8965"
 	r := setupRouter()
 
 	w := httptest.NewRecorder()
@@ -212,8 +213,8 @@ func TestGetFavicon(t *testing.T) {
 		t.Errorf("incorrect Cache-Control, got %q, want%q\n", headers.Get("Cache-Control"), "public, max-age=31536000")
 		t.FailNow()
 	}
-	if headers.Get("ETag") != "d6ab255e0eb3f7ce86dcb0ba12992a67" {
-		t.Errorf("incorrect ETag, got %q, want %q\n", headers.Get("ETag"), "d6ab255e0eb3f7ce86dcb0ba12992a67")
+	if headers.Get("ETag") != etg {
+		t.Errorf("incorrect ETag, got %q, want %q\n", headers.Get("ETag"), etg)
 		t.FailNow()
 	}
 
@@ -232,14 +233,14 @@ func TestGetFavicon(t *testing.T) {
 		t.Errorf("incorrect Cache-Control, got %q, want %q\n", headers.Get("Cache-Control"), "public, max-age=31536000")
 		t.FailNow()
 	}
-	if headers.Get("ETag") != "d6ab255e0eb3f7ce86dcb0ba12992a67" {
-		t.Errorf("incorrect ETag, got %q, want %q\n", headers.Get("ETag"), "d6ab255e0eb3f7ce86dcb0ba12992a67")
+	if headers.Get("ETag") != etg {
+		t.Errorf("incorrect ETag, got %q, want %q\n", headers.Get("ETag"), etg)
 		t.FailNow()
 	}
 
 	w = httptest.NewRecorder()
 	req, _ = http.NewRequest("GET", "/favicon.ico", nil)
-	req.Header.Add("If-None-Match", "d6ab255e0eb3f7ce86dcb0ba12992a67")
+	req.Header.Add("If-None-Match", etg)
 	r.ServeHTTP(w, req)
 
 	if w.Code != http.StatusNotModified {
