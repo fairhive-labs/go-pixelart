@@ -32,7 +32,7 @@ func main() {
 
 	fmt.Println("👾 Processing Transformation...")
 	ft := filter.NewPixelFilter(100, filter.ShortEdge, filter.CGA4)
-	p := ft.Process(&img)
+	p := ft.Process(img)
 	fmt.Println("✅ Transformation is over")
 
 	if err := save(getFilename(src.Name(), time.Now()), f, p); err != nil {

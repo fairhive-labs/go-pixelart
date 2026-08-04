@@ -173,7 +173,7 @@ func pixelize(c *gin.Context) {
 		return
 	}
 	ft := filter.NewPixelFilter(form.Slices, edge, fl)
-	p := ft.Process(&img)
+	p := ft.Process(img)
 	log.Println("✅ Transformation is over")
 
 	buf := bytes.Buffer{}

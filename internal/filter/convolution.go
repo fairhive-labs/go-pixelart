@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"image"
 	"image/color"
-
-	"github.com/fairhive-labs/go-pixelart/internal/colorutils"
 )
 
 const (
@@ -68,15 +66,30 @@ func NewConvolutionFilter(k *kernel, pre, post TransformColor) *convolutionFilte
 	return &convolutionFilter{k, pre, post}
 }
 
-func (f *convolutionFilter) Process(src *image.Image) *image.RGBA {
-	b := (*src).Bounds()
-	p := image.NewRGBA(image.Rect(0, 0, b.Max.X, b.Max.Y))
-	for x := 0; x < b.Max.X; x++ {
-		for y := 0; y < b.Max.Y; y++ {
-			c := processConvolution(src, x, y, b.Max.X, b.Max.Y, f.k, f.pre, f.post)
-			p.Set(x, y, c)
-		}
+func (f *convolutionFilter) Process(src image.Image) *image.RGBA {
+	b := src.Bounds()
+	w, h := b.Dx(), b.Dy()
+	p := image.NewRGBA(image.Rect(0, 0, w, h))
+
+	// pre-processing is applied once per pixel here instead of once per kernel
+	// tap - a k*k reduction in transformation calls for the same result
+	pre := f.pre
+	if pre == nil {
+		pre = Identity
 	}
+	src = NewBasicFilter(pre).Process(src)
+	at := newSampler(src)
+
+	parallelRange(h, func(y0, y1 int) {
+		for y := y0; y < y1; y++ {
+			i := y * p.Stride
+			for x := 0; x < w; x++ {
+				c := processConvolution(at, image.Point{}, x, y, w, h, f.k, nil, f.post)
+				p.Pix[i], p.Pix[i+1], p.Pix[i+2], p.Pix[i+3] = c.R, c.G, c.B, c.A
+				i += 4
+			}
+		}
+	})
 	return p
 }
 
@@ -109,13 +122,16 @@ func NewKernel(s int, m matrix, f int) (*kernel, error) {
 	return &kernel{s, m, f}, nil
 }
 
-func processConvolution(img *image.Image, x, y, xmax, ymax int, k *kernel, preProcessing, postProcessing TransformColor) color.Color {
+// processConvolution computes the convolution of the kernel k around (x, y).
+// preProcessing may be nil when the caller already applied it to the sampled
+// image, which is what convolutionFilter.Process does.
+func processConvolution(at sampler, orig image.Point, x, y, xmax, ymax int, k *kernel, preProcessing, postProcessing TransformColor) color.RGBA {
 	if postProcessing == nil {
 		postProcessing = Identity
 	}
 
 	if k == nil {
-		return postProcessing(getPixel(preProcessing, img, x, y))
+		return toRGBA(postProcessing(getPixel(preProcessing, at, orig, x, y)))
 	}
 
 	s := k.size
@@ -125,16 +141,15 @@ func processConvolution(img *image.Image, x, y, xmax, ymax int, k *kernel, prePr
 
 	for i := 0; i < s; i++ {
 		for j := 0; j < s; j++ {
-			var c color.Color
+			var c color.RGBA
 			if i+x-s/2 >= 0 && j+y-s/2 >= 0 && i+x-s/2 < xmax && j+y-s/2 < ymax {
-				c = getPixel(preProcessing, img, i+x-s/2, j+y-s/2)
+				c = getPixel(preProcessing, at, orig, i+x-s/2, j+y-s/2)
 			} else {
-				c = getPixel(preProcessing, img, x, y)
+				c = getPixel(preProcessing, at, orig, x, y)
 			}
-			r, g, b, _ := colorutils.RgbaValues(c)
-			rs += k.matrix[j*s+i] * int(r)
-			gs += k.matrix[j*s+i] * int(g)
-			bs += k.matrix[j*s+i] * int(b)
+			rs += k.matrix[j*s+i] * int(c.R)
+			gs += k.matrix[j*s+i] * int(c.G)
+			bs += k.matrix[j*s+i] * int(c.B)
 		}
 	}
 
@@ -144,14 +159,16 @@ func processConvolution(img *image.Image, x, y, xmax, ymax int, k *kernel, prePr
 		bs /= k.factor
 	}
 
-	return postProcessing(color.RGBA{uint8(correctValue(rs)), uint8(correctValue(gs)), uint8(correctValue(bs)), 0xFF})
+	return toRGBA(postProcessing(color.RGBA{uint8(correctValue(rs)), uint8(correctValue(gs)), uint8(correctValue(bs)), 0xFF}))
 }
 
-func getPixel(t TransformColor, img *image.Image, x, y int) color.Color {
+func getPixel(t TransformColor, at sampler, orig image.Point, x, y int) color.RGBA {
+	r, g, b, a := at(orig.X+x, orig.Y+y)
+	c := color.RGBA{r, g, b, a}
 	if t == nil {
-		t = Identity
+		return c
 	}
-	return t((*img).At(x, y))
+	return toRGBA(t(c))
 }
 
 func correctValue(x int) int {
