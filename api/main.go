@@ -3,21 +3,25 @@ package main
 import (
 	"bytes"
 	"context"
-	"crypto/md5"
+	"crypto/sha256"
 	"embed"
 	"encoding/base64"
+	"encoding/hex"
 	"errors"
-	"fmt"
 	"html/template"
 	"image"
 	"image/jpeg"
 	"image/png"
+	"io"
 	"log"
 	"mime/multipart"
 	"net/http"
 	"os"
 	"os/signal"
+	"runtime"
+	"strconv"
 	"strings"
+	"sync"
 	"syscall"
 	"time"
 
@@ -35,23 +39,50 @@ type PixelizeForm struct {
 //go:embed assets templates
 var fs embed.FS
 
-var (
-	filters map[string]filter.TransformColor = map[string]filter.TransformColor{
-		"cga2":          filter.CGA2,
-		"cga4":          filter.CGA4,
-		"cga16":         filter.CGA16,
-		"ega":           filter.EGA,
-		"vga":           filter.VGA,
-		"identity":      filter.Identity,
-		"dark-contrast": filter.DarkContrast,
-		"dark-gray":     filter.DarkGrayColor,
-		"gray":          filter.GrayColor,
-		"invert":        filter.InvertColor,
-		"light-gray":    filter.LightGrayColor,
-		"xray":          filter.XRayColor,
-	}
-	errUnsupportedFilter = errors.New("unsupported filter")
+const (
+	defaultMaxUploadBytes   int64 = 10 << 20   // 10 MiB
+	defaultMaxPixels        int64 = 40_000_000 // 40 MP, ~160 MB once decoded
+	multipartMemoryFraction int64 = 4          // part of an upload kept in memory
+	shutdownGrace                 = 10 * time.Second
+
+	csp = "default-src 'self'; " +
+		"img-src 'self' data:; " +
+		"style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; " +
+		"script-src 'self' 'unsafe-inline'; " +
+		"form-action 'self'; frame-ancestors 'none'; base-uri 'none'"
 )
+
+var (
+	filters              = filter.ByName
+	errUnsupportedFilter = filter.ErrUnsupportedFilter
+
+	// limits, overridable through the environment
+	maxUploadBytes = envInt64("MAX_UPLOAD_BYTES", defaultMaxUploadBytes)
+	maxPixels      = envInt64("MAX_PIXELS", defaultMaxPixels)
+
+	// jobs bounds the number of transformations running at the same time: each
+	// one is CPU bound and holds a decoded picture plus its copy in memory
+	jobs = make(chan struct{}, max(int(envInt64("MAX_CONCURRENT_JOBS", int64(runtime.GOMAXPROCS(0)))), 1))
+
+	// the favicon is embedded, its ETag never changes while running
+	favicon = sync.OnceValues(func() ([]byte, string) {
+		f, err := fs.ReadFile("assets/favicon.ico")
+		if err != nil {
+			log.Printf("👹 cannot read the embedded favicon: %v", err)
+			return nil, ""
+		}
+		sum := sha256.Sum256(f)
+		return f, `"` + hex.EncodeToString(sum[:16]) + `"`
+	})
+)
+
+func envInt64(name string, def int64) int64 {
+	v, err := strconv.ParseInt(os.Getenv(name), 10, 64)
+	if err != nil || v <= 0 {
+		return def
+	}
+	return v
+}
 
 func setupRouter() *gin.Engine {
 	r := gin.Default()
@@ -59,9 +90,9 @@ func setupRouter() *gin.Engine {
 		"ToUpper": strings.ToUpper,
 	}).ParseFS(fs, "templates/*"))
 	r.SetHTMLTemplate(t)
-	r.MaxMultipartMemory = 16 << 20 // 16 MiB
+	r.MaxMultipartMemory = max(maxUploadBytes/multipartMemoryFraction, 1<<20)
 
-	r.Use(cors)
+	r.Use(secureHeaders, cors)
 	r.GET("/health", func(c *gin.Context) {
 		c.String(http.StatusOK, "ok")
 	})
@@ -74,6 +105,9 @@ func setupRouter() *gin.Engine {
 }
 
 func main() {
+	if os.Getenv("GIN_MODE") == "" {
+		gin.SetMode(gin.ReleaseMode)
+	}
 	r := setupRouter()
 
 	var addr string
@@ -84,12 +118,13 @@ func main() {
 	}
 
 	srv := &http.Server{
-		Addr:           addr,
-		Handler:        r,
-		ReadTimeout:    10 * time.Second,
-		WriteTimeout:   20 * time.Second,
-		IdleTimeout:    time.Minute,
-		MaxHeaderBytes: 1 << 20, // 1 MB
+		Addr:              addr,
+		Handler:           r,
+		ReadHeaderTimeout: 5 * time.Second,
+		ReadTimeout:       60 * time.Second, // an upload weighs up to maxUploadBytes
+		WriteTimeout:      120 * time.Second,
+		IdleTimeout:       time.Minute,
+		MaxHeaderBytes:    1 << 20, // 1 MB
 	}
 
 	idleConnsClosed := make(chan struct{})
@@ -100,7 +135,7 @@ func main() {
 		log.Printf("🚨 Shutdown signal \"%v\" received\n", s)
 
 		log.Printf("🚦 Here we go for a graceful Shutdown...\n")
-		ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
+		ctx, cancel := context.WithTimeout(context.Background(), shutdownGrace)
 		defer cancel()
 		if err := srv.Shutdown(ctx); err != nil {
 			// Error from closing listeners, or context timeout:
@@ -110,6 +145,8 @@ func main() {
 	}()
 
 	log.Printf("✅ Listening and serving HTTP on %s\n", addr)
+	log.Printf("🔒 Limits: %d bytes per upload, %d pixels per picture, %d concurrent jobs\n",
+		maxUploadBytes, maxPixels, cap(jobs))
 	err := srv.ListenAndServe()
 	if !errors.Is(err, http.ErrServerClosed) {
 		log.Fatalf("👹 HTTP server ListenAndServe: %v", err)
@@ -120,22 +157,32 @@ func main() {
 
 }
 
-func getFilter(f string) (t filter.TransformColor, err error) {
-	t, ok := filters[f]
-	if !ok {
-		return t, errUnsupportedFilter
-	}
-	return
+func getFilter(f string) (filter.TransformColor, error) {
+	return filter.Get(f)
 }
 
 func pixelize(c *gin.Context) {
+	// bound the request body before anything reads it: without this a client
+	// can stream an unlimited amount of data into memory and temporary files
+	c.Request.Body = http.MaxBytesReader(c.Writer, c.Request.Body, maxUploadBytes)
+
 	var form PixelizeForm
 	if err := c.ShouldBind(&form); err != nil {
+		var tooLarge *http.MaxBytesError
+		if errors.As(err, &tooLarge) {
+			c.String(http.StatusRequestEntityTooLarge, "picture is too large, %d bytes max", maxUploadBytes)
+			return
+		}
 		c.String(http.StatusBadRequest, err.Error())
 		return
 	}
 	log.Printf("📏 Slices = %d \n", form.Slices)
-	log.Printf("👉 Source file %q opened\n", form.File.Filename)
+	log.Printf("👉 Source file %q opened\n", sanitize(form.File.Filename))
+
+	if form.File.Size > maxUploadBytes {
+		c.String(http.StatusRequestEntityTooLarge, "picture is too large, %d bytes max", maxUploadBytes)
+		return
+	}
 
 	edge := filter.ShortEdge
 	if form.Edge == "long" {
@@ -143,33 +190,70 @@ func pixelize(c *gin.Context) {
 		log.Println("🏗  Using Long Edge")
 	}
 
+	fl, err := getFilter(form.Filter)
+	if err != nil {
+		log.Println("❌ Transformation aborted")
+		c.String(http.StatusBadRequest, err.Error())
+		return
+	}
+
 	src, err := form.File.Open()
 	if err != nil {
-		c.String(http.StatusInternalServerError, err.Error())
+		log.Printf("👹 cannot open the uploaded picture: %v", err)
+		c.String(http.StatusInternalServerError, "cannot read the uploaded picture")
 		return
 	}
 	defer src.Close()
 
+	// read the declared dimensions before decoding: a small file can expand
+	// into gigabytes of pixels once decoded
+	cfg, f, err := image.DecodeConfig(src)
+	if err != nil {
+		c.String(http.StatusUnsupportedMediaType, "unsupported picture format, only PNG and JPEG are supported")
+		return
+	}
+	if f != "png" && f != "jpeg" {
+		c.String(http.StatusUnsupportedMediaType, "unsupported picture format %q, only PNG and JPEG are supported", f)
+		return
+	}
+	if px := int64(cfg.Width) * int64(cfg.Height); px > maxPixels {
+		log.Printf("❌ Transformation aborted, [ %d x %d ] declared\n", cfg.Width, cfg.Height)
+		c.String(http.StatusRequestEntityTooLarge,
+			"picture is too large, [ %d x %d ] declared, %d pixels max", cfg.Width, cfg.Height, maxPixels)
+		return
+	}
+	if _, err := src.Seek(0, io.SeekStart); err != nil {
+		log.Printf("👹 cannot rewind the uploaded picture: %v", err)
+		c.String(http.StatusInternalServerError, "cannot read the uploaded picture")
+		return
+	}
+
+	// bound the number of transformations in flight
+	select {
+	case jobs <- struct{}{}:
+		defer func() { <-jobs }()
+	default:
+		log.Println("🛑 Too many transformations in flight")
+		c.Header("Retry-After", "5")
+		c.String(http.StatusServiceUnavailable, "too many pictures being processed, please retry")
+		return
+	}
+
 	img, f, err := image.Decode(src)
 	if err != nil {
-		c.String(http.StatusInternalServerError, err.Error())
+		log.Printf("👹 cannot decode the uploaded picture: %v", err)
+		c.String(http.StatusUnsupportedMediaType, "cannot decode the uploaded picture")
 		return
 	}
 	log.Printf("🤖 Image DECODED - Format is %q\n", f)
 
 	b := img.Bounds()
-	log.Printf("🖼  Original Dimension = [ %d x %d ]\n", b.Max.X, b.Max.Y)
+	log.Printf("🖼  Original Dimension = [ %d x %d ]\n", b.Dx(), b.Dy())
 
 	log.Println("👾 Processing Transformation...")
-	if form.Slices > b.Max.X || form.Slices > b.Max.Y {
+	if form.Slices > b.Dx() || form.Slices > b.Dy() {
 		log.Println("❌ Transformation aborted")
-		c.String(http.StatusBadRequest, "Cannot cut [ %d x %d ] into %d slices", b.Max.X, b.Max.Y, form.Slices)
-		return
-	}
-	fl, err := getFilter(form.Filter)
-	if err != nil {
-		log.Println("❌ Transformation aborted")
-		c.String(http.StatusBadRequest, err.Error())
+		c.String(http.StatusBadRequest, "Cannot cut [ %d x %d ] into %d slices", b.Dx(), b.Dy(), form.Slices)
 		return
 	}
 	ft := filter.NewPixelFilter(form.Slices, edge, fl)
@@ -180,18 +264,15 @@ func pixelize(c *gin.Context) {
 	switch f {
 	case "png":
 		err = png.Encode(&buf, p)
-		if err != nil {
-			c.String(http.StatusInternalServerError, err.Error())
-			return
-		}
 	case "jpeg":
 		err = jpeg.Encode(&buf, p, nil) //default quality is 75%
-		if err != nil {
-			c.String(http.StatusInternalServerError, err.Error())
-			return
-		}
 	default:
-		c.String(http.StatusInternalServerError, "unsupported picture format")
+		c.String(http.StatusUnsupportedMediaType, "unsupported picture format")
+		return
+	}
+	if err != nil {
+		log.Printf("👹 cannot encode the pixel art: %v", err)
+		c.String(http.StatusInternalServerError, "cannot encode the pixel art")
 		return
 	}
 
@@ -213,33 +294,56 @@ func pixelize(c *gin.Context) {
 	log.Printf("🎨 Pixel Art produced\n")
 }
 
+// sanitize keeps user controlled values from injecting line breaks and control
+// characters into the logs.
+func sanitize(s string) string {
+	return strings.Map(func(r rune) rune {
+		if r < 0x20 || r == 0x7F {
+			return -1
+		}
+		return r
+	}, s)
+}
+
 func cors(c *gin.Context) {
+	// public API, no cookie and no credential involved: "*" is fine, but
+	// Access-Control-Allow-Credentials must not come with it - browsers reject
+	// the combination and it would open credentialed cross origin calls
 	c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
-	c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
-	c.Writer.Header().Set("Access-Control-Allow-Headers", "origin, content-type, accept, authorization")
+	c.Writer.Header().Set("Access-Control-Allow-Headers", "origin, content-type, accept")
 	c.Writer.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS")
 
-	if c.Request.Method == "OPTIONS" {
+	if c.Request.Method == http.MethodOptions {
 		c.AbortWithStatus(http.StatusNoContent)
 		return
 	}
 	c.Next()
 }
 
+func secureHeaders(c *gin.Context) {
+	h := c.Writer.Header()
+	h.Set("X-Content-Type-Options", "nosniff")
+	h.Set("X-Frame-Options", "DENY")
+	h.Set("Referrer-Policy", "no-referrer")
+	h.Set("Content-Security-Policy", csp)
+	c.Next()
+}
+
 func getFavicon(c *gin.Context) {
-	file, err := fs.ReadFile("assets/favicon.ico")
-	etag := fmt.Sprintf("%x", md5.Sum(file))
-	if err != nil {
-		c.String(http.StatusInternalServerError, err.Error())
+	file, etag := favicon()
+	if file == nil {
+		c.String(http.StatusInternalServerError, "cannot read the favicon")
 		return
 	}
 	if match := c.GetHeader("If-None-Match"); match != "" {
-		if strings.Contains(match, etag) {
-			c.AbortWithStatus(http.StatusNotModified)
-			return
+		for _, m := range strings.Split(match, ",") {
+			if m := strings.TrimSpace(m); m == etag || m == "*" {
+				c.AbortWithStatus(http.StatusNotModified)
+				return
+			}
 		}
 	}
-	c.Header("Cache-Control", "public, max-age=31536000")
+	c.Header("Cache-Control", "public, max-age=31536000, immutable")
 	c.Header("ETag", etag)
 	c.Data(
 		http.StatusOK,
