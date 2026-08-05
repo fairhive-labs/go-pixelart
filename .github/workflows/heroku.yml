@@ -26,6 +26,14 @@ jobs:
       - name: Skipping deployment
         if: ${{ env.HEROKU_CONFIGURED != 'true' }}
         run: echo "::notice::HEROKU_API_KEY is not configured, skipping the Heroku deployment"
+      # the Heroku CLI is no longer preinstalled on the GitHub runners, and
+      # heroku-deploy shells out to it: without this the deploy step dies with
+      # "/bin/sh: 1: heroku: not found"
+      - name: Install the Heroku CLI
+        if: ${{ env.HEROKU_CONFIGURED == 'true' }}
+        run: |
+          curl -fsSL https://cli-assets.heroku.com/install.sh | sh
+          heroku --version
       - name: Deploy
         if: ${{ env.HEROKU_CONFIGURED == 'true' }}
         uses: akhileshns/heroku-deploy@v3.15.15
