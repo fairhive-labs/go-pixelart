@@ -7,7 +7,14 @@ permissions:
 
 jobs:
   unit-test:
-    runs-on: ubuntu-latest
+    strategy:
+      # a failing OS must not cancel the other, both results are wanted
+      fail-fast: false
+      matrix:
+        # the matrix lives here rather than in an input, so pull requests and
+        # pushes on main run exactly the same checks
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
     steps:
       - name: checkout
         uses: actions/checkout@v7
