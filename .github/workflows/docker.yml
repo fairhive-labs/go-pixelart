@@ -2,6 +2,9 @@ on:
   push:
     branches:
       - main
+    tags:
+      # semver tags publish a versioned image, see type=semver below
+      - "v*.*.*"
   pull_request:
 
 env:
@@ -62,6 +65,7 @@ jobs:
             type=raw,value=latest,enable=${{ endsWith(github.ref, 'main') }}
             type=raw,event=branch,value={{branch}}
             type=semver,pattern={{raw}}
+            type=semver,pattern={{major}}.{{minor}}
             type=sha,format=long
       - name: Build and push Docker image
         uses: docker/build-push-action@v7
