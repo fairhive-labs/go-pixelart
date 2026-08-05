@@ -1,15 +1,6 @@
 name: Unit Test
 on:
   workflow_call:
-    inputs:
-      go-version:
-        required: false
-        type: string
-        default: "['1.25.x']"
-      os:
-        required: false
-        type: string
-        default: "['ubuntu-latest']"
 
 permissions:
   contents: read
@@ -17,9 +8,12 @@ permissions:
 jobs:
   unit-test:
     strategy:
+      # a failing OS must not cancel the other, both results are wanted
+      fail-fast: false
       matrix:
-        go-version: ${{ fromJson(inputs.go-version) }}
-        os: ${{ fromJson(inputs.os) }}
+        # the matrix lives here rather than in an input, so pull requests and
+        # pushes on main run exactly the same checks
+        os: [ubuntu-latest, macos-latest]
     runs-on: ${{ matrix.os }}
     steps:
       - name: checkout
@@ -27,13 +21,12 @@ jobs:
       - name: setup
         uses: actions/setup-go@v7
         with:
-          go-version: ${{ matrix.go-version }}
+          go-version: "1.25.x"
           cache: true
       - name: vet
         run: go vet ./...
       - name: gofmt
         run: test -z "$(gofmt -l .)" || (gofmt -l . && exit 1)
-        shell: bash
       - name: test
         run: go test -race -v ./...
 
