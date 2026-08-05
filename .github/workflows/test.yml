@@ -17,6 +17,8 @@ permissions:
 jobs:
   unit-test:
     strategy:
+      # one failing OS must not cancel the others, their results are wanted too
+      fail-fast: false
       matrix:
         go-version: ${{ fromJson(inputs.go-version) }}
         os: ${{ fromJson(inputs.os) }}
@@ -31,7 +33,9 @@ jobs:
           cache: true
       - name: vet
         run: go vet ./...
+      # formatting does not depend on the platform, checking it once is enough
       - name: gofmt
+        if: runner.os == 'Linux'
         run: test -z "$(gofmt -l .)" || (gofmt -l . && exit 1)
         shell: bash
       - name: test

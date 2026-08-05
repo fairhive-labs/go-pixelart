@@ -1,0 +1,6 @@
+# Check out text files with LF on every platform. Windows checkouts default to
+# CRLF, which gofmt - which always writes LF - reports as unformatted.
+* text=auto eol=lf
+
+*.png binary
+*.ico binary
