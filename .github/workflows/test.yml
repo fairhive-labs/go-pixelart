@@ -1,43 +1,25 @@
 name: Unit Test
 on:
   workflow_call:
-    inputs:
-      go-version:
-        required: false
-        type: string
-        default: "['1.25.x']"
-      os:
-        required: false
-        type: string
-        default: "['ubuntu-latest']"
 
 permissions:
   contents: read
 
 jobs:
   unit-test:
-    strategy:
-      # one failing OS must not cancel the others, their results are wanted too
-      fail-fast: false
-      matrix:
-        go-version: ${{ fromJson(inputs.go-version) }}
-        os: ${{ fromJson(inputs.os) }}
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
     steps:
       - name: checkout
         uses: actions/checkout@v7
       - name: setup
         uses: actions/setup-go@v7
         with:
-          go-version: ${{ matrix.go-version }}
+          go-version: "1.25.x"
           cache: true
       - name: vet
         run: go vet ./...
-      # formatting does not depend on the platform, checking it once is enough
       - name: gofmt
-        if: runner.os == 'Linux'
         run: test -z "$(gofmt -l .)" || (gofmt -l . && exit 1)
-        shell: bash
       - name: test
         run: go test -race -v ./...
 
