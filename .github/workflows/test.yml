@@ -5,11 +5,15 @@ on:
       go-version:
         required: false
         type: string
-        default: "['1.20.x']"
+        default: "['1.25.x']"
       os:
         required: false
         type: string
         default: "['ubuntu-latest']"
+
+permissions:
+  contents: read
+
 jobs:
   unit-test:
     strategy:
@@ -19,9 +23,26 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - name: checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v7
       - name: setup
-        uses: actions/setup-go@v4
+        uses: actions/setup-go@v7
         with:
           go-version: ${{ matrix.go-version }}
-      - run: go test -v ./...
+          cache: true
+      - name: vet
+        run: go vet ./...
+      - name: gofmt
+        run: test -z "$(gofmt -l .)" || (gofmt -l . && exit 1)
+        shell: bash
+      - name: test
+        run: go test -race -v ./...
+
+  vulncheck:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@v7
+      - name: govulncheck
+        uses: golang/govulncheck-action@v1
+        with:
+          go-version-input: "1.25.x"

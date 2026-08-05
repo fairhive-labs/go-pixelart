@@ -3,14 +3,13 @@ package filter
 import (
 	"image"
 	"image/color"
-	"sort"
 
 	"github.com/fairhive-labs/go-pixelart/internal/colorutils"
 )
 
 type Filter interface {
 	//Process image transformation from source src to destination dst
-	Process(src *image.Image) *image.RGBA
+	Process(src image.Image) *image.RGBA
 }
 
 type basicFilter struct {
@@ -25,15 +24,22 @@ func NewBasicFilter(transform TransformColor) *basicFilter {
 	return &basicFilter{transform}
 }
 
-func (f *basicFilter) Process(src *image.Image) *image.RGBA {
-	b := (*src).Bounds()
-	p := image.NewRGBA(image.Rect(0, 0, b.Max.X, b.Max.Y))
-	for x := 0; x < b.Max.X; x++ {
-		for y := 0; y < b.Max.Y; y++ {
-			c := f.transform((*src).At(x, y))
-			p.Set(x, y, c)
+func (f *basicFilter) Process(src image.Image) *image.RGBA {
+	b := src.Bounds()
+	w, h := b.Dx(), b.Dy()
+	p := image.NewRGBA(image.Rect(0, 0, w, h))
+	at := newSampler(src)
+	parallelRange(h, func(y0, y1 int) {
+		for y := y0; y < y1; y++ {
+			i := y * p.Stride
+			for x := 0; x < w; x++ {
+				r, g, bl, a := at(b.Min.X+x, b.Min.Y+y)
+				c := toRGBA(f.transform(color.RGBA{r, g, bl, a}))
+				p.Pix[i], p.Pix[i+1], p.Pix[i+2], p.Pix[i+3] = c.R, c.G, c.B, c.A
+				i += 4
+			}
 		}
-	}
+	})
 	return p
 }
 
@@ -75,20 +81,36 @@ func LightGrayColor(c color.Color) color.Color { // get the brighest value in RG
 func DarkContrast(c color.Color) color.Color {
 	r, g, b, a := colorutils.RgbaValues(c)
 
-	s := []uint8{r, g, b}
-	sort.Slice(s, func(i, j int) bool {
-		return s[i] <= s[j]
-	})
-
-	m := map[uint8]int{r: 0, g: 0, b: 0}
-	for i, x := range s {
-		m[x] = i
+	s := [3]uint8{r, g, b}
+	// ascending sort of 3 values, without sort.Slice and its escaping closure
+	if s[0] > s[1] {
+		s[0], s[1] = s[1], s[0]
 	}
+	if s[1] > s[2] {
+		s[1], s[2] = s[2], s[1]
+	}
+	if s[0] > s[1] {
+		s[0], s[1] = s[1], s[0]
+	}
+
+	// rank of each channel in the sorted values, highest index wins on ties
+	ir, ig, ib := rank(s, r), rank(s, g), rank(s, b)
 
 	s[1] -= ((s[1] - s[0]) >> 1)
 	s[2] -= ((s[2] - s[0]) >> 2)
 
-	return color.RGBA{s[m[r]], s[m[g]], s[m[b]], a}
+	return color.RGBA{s[ir], s[ig], s[ib], a}
+}
+
+func rank(s [3]uint8, v uint8) int {
+	switch {
+	case s[2] == v:
+		return 2
+	case s[1] == v:
+		return 1
+	default:
+		return 0
+	}
 }
 
 func Identity(c color.Color) color.Color {

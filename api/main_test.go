@@ -184,7 +184,11 @@ func TestHealth(t *testing.T) {
 }
 
 func TestGetFavicon(t *testing.T) {
-	etg := "042fcec4629b02c73aa21a3d26ca8965"
+	_, etg := favicon()
+	if etg == "" {
+		t.Error("favicon ETag cannot be empty")
+		t.FailNow()
+	}
 	r := setupRouter()
 
 	w := httptest.NewRecorder()
@@ -211,8 +215,8 @@ func TestGetFavicon(t *testing.T) {
 		t.FailNow()
 	}
 
-	if headers.Get("Cache-Control") != "public, max-age=31536000" {
-		t.Errorf("incorrect Cache-Control, got %q, want%q\n", headers.Get("Cache-Control"), "public, max-age=31536000")
+	if headers.Get("Cache-Control") != "public, max-age=31536000, immutable" {
+		t.Errorf("incorrect Cache-Control, got %q, want%q\n", headers.Get("Cache-Control"), "public, max-age=31536000, immutable")
 		t.FailNow()
 	}
 	if headers.Get("ETag") != etg {
@@ -231,8 +235,8 @@ func TestGetFavicon(t *testing.T) {
 	}
 
 	headers = w.Result().Header
-	if headers.Get("Cache-Control") != "public, max-age=31536000" {
-		t.Errorf("incorrect Cache-Control, got %q, want %q\n", headers.Get("Cache-Control"), "public, max-age=31536000")
+	if headers.Get("Cache-Control") != "public, max-age=31536000, immutable" {
+		t.Errorf("incorrect Cache-Control, got %q, want %q\n", headers.Get("Cache-Control"), "public, max-age=31536000, immutable")
 		t.FailNow()
 	}
 	if headers.Get("ETag") != etg {
